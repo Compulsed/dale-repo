@@ -1,20 +1,38 @@
-# Serverless Aurora Lambda Starter
+# Dale Repo
 
-This project is intended to help set up a very simple CDK Serverless Aurora project with AWS lambda / Api Gateway.
+Stores all of Dale's projects that depend on an RDBMS
 
-To run this project:
+Shared:
+
+- VPC (isolated, public networks)
+- EC2 for Nat Gateway / Bastion host
+  - I think there is a CDK for this now
+  - SSM Systems manager, ssh port forwarding
+- Aurora instance
+- Exports
+  - User / password / host, etc
+
+Isolated:
+
+- CDK project with own deps
+- Lambda deployed into VPC ID
+- Security groups
+
+Limitations:
+
+- Lambda triggers in aurora
+
+**Commands:**
+
+SSM
 
 ```
-npm install
-npx cdk deploy
+aws ssm start-session --target "i-024761b22a70b2114"
+aws ssm start-session --document-name AWS-StartPortForwardingSessionToRemoteHost --parameters '{"host":["serverlessaurora-dbcluster224236ef-jy7omaryufw2.cluster-cp1pjbcco8nm.us-east-1.rds.amazonaws.com"],"portNumber":["5432"], "localPortNumber":["5432"]}' --target "i-024761b22a70b2114"
 ```
 
-**Access**
+Postgres
 
-To get access to your database with an SQL client, extract the database credentials out of secrets manager
-
-**Security considerations:**
-
-This project sets up a Serverless Aurora with a public URL and an open security group. This the permissive database networking rule is to eliminate the need for Lambda to be in a VPC. If lambda is in a VPC, the function will not have access to the public internet without a NATGateway OR a NatInstance (expensive).
-
-When running this in a production environment the recommendation to move the RDS cluster into a private subnet, and to have the lambda function exist within a VPC.
+```
+psql -h "serverlessaurora-dbcluster224236ef-jy7omaryufw2.cluster-cp1pjbcco8nm.us-east-1.rds.amazonaws.com" -U "postgres"
+```

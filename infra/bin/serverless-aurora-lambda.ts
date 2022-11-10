@@ -5,4 +5,6 @@ import { ServerlessAuroraLambda } from '../lib/serverless-aurora-lambda'
 
 const app = new cdk.App()
 
-new ServerlessAuroraLambda(app, 'ServerlessAurora', {})
+new ServerlessAuroraLambda(app, 'ServerlessAuroraLambda', {
+  env: { account: process.env.CDK_DEFAULT_ACCOUNT, region: process.env.CDK_DEFAULT_REGION },
+})

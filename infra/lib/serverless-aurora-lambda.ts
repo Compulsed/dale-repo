@@ -4,7 +4,16 @@ import { NodejsFunction } from 'aws-cdk-lib/aws-lambda-nodejs'
 import { LambdaRestApi } from 'aws-cdk-lib/aws-apigateway'
 import { Architecture, Runtime } from 'aws-cdk-lib/aws-lambda'
 import * as rds from 'aws-cdk-lib/aws-rds'
-import { InstanceType, SecurityGroup, SubnetType, Vpc, Peer, Port } from 'aws-cdk-lib/aws-ec2'
+import {
+  InstanceType,
+  SecurityGroup,
+  SubnetType,
+  Vpc,
+  Peer,
+  Port,
+  BastionHostLinux,
+  NatProvider,
+} from 'aws-cdk-lib/aws-ec2'
 import { Aspects, Duration } from 'aws-cdk-lib'
 import { CfnDBCluster } from 'aws-cdk-lib/aws-rds'
 
@@ -12,10 +21,19 @@ export class ServerlessAuroraLambda extends cdk.Stack {
   constructor(scope: Construct, id: string, props?: cdk.StackProps) {
     super(scope, id, props)
 
+    const natGatewayProvider = NatProvider.instance({
+      instanceType: new InstanceType('t3.nano'),
+    })
+
     const vpc = new Vpc(this, 'Vpc', {
       cidr: '10.0.0.0/16',
-      subnetConfiguration: [{ name: 'egress', subnetType: SubnetType.PUBLIC }],
-      natGateways: 0,
+      subnetConfiguration: [
+        { name: 'public', subnetType: SubnetType.PUBLIC },
+        { name: 'private-egress', subnetType: SubnetType.PRIVATE_WITH_EGRESS },
+        { name: 'private-isolated', subnetType: SubnetType.PRIVATE_ISOLATED },
+      ],
+      natGateways: 1,
+      natGatewayProvider,
     })
 
     const dbSecurityGroup = new SecurityGroup(this, 'DbSecurityGroup', {
@@ -23,6 +41,7 @@ export class ServerlessAuroraLambda extends cdk.Stack {
       allowAllOutbound: true,
     })
 
+    // TODO: Consider if this is needed, it might be because that's what EC2 uses
     dbSecurityGroup.addIngressRule(Peer.anyIpv4(), Port.tcp(5432), 'Allow internet to read / write to aurora')
 
     // Full spec https://github.com/aws/aws-cdk/issues/20197#issuecomment-1117555047
@@ -35,10 +54,10 @@ export class ServerlessAuroraLambda extends cdk.Stack {
         vpc: vpc,
         instanceType: new InstanceType('serverless'),
         autoMinorVersionUpgrade: true,
-        publiclyAccessible: true,
+        publiclyAccessible: false,
         securityGroups: [dbSecurityGroup],
         vpcSubnets: vpc.selectSubnets({
-          subnetType: SubnetType.PUBLIC,
+          subnetType: SubnetType.PRIVATE_ISOLATED,
         }),
       },
       port: 5432,
@@ -55,6 +74,13 @@ export class ServerlessAuroraLambda extends cdk.Stack {
       },
     })
 
+    new BastionHostLinux(this, 'BastionHost', {
+      vpc,
+      subnetSelection: vpc.selectSubnets({
+        subnetType: SubnetType.PRIVATE_WITH_EGRESS,
+      }),
+    })
+
     const apiFunction = new NodejsFunction(this, 'ApiFunction', {
       runtime: Runtime.NODEJS_16_X,
       architecture: Architecture.ARM_64,
@@ -66,6 +92,10 @@ export class ServerlessAuroraLambda extends cdk.Stack {
       bundling: {
         externalModules: ['pg-native'],
       },
+      vpc,
+      vpcSubnets: vpc.selectSubnets({
+        subnetType: SubnetType.PRIVATE_WITH_EGRESS,
+      }),
     })
 
     dbCluster.secret?.grantRead(apiFunction)
