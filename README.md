@@ -28,7 +28,7 @@ SSM
 
 ```
 aws ssm start-session --target "i-024761b22a70b2114"
-aws ssm start-session --document-name AWS-StartPortForwardingSessionToRemoteHost --parameters '{"host":["serverlessaurora-dbcluster224236ef-jy7omaryufw2.cluster-cp1pjbcco8nm.us-east-1.rds.amazonaws.com"],"portNumber":["5432"], "localPortNumber":["5432"]}' --target "i-024761b22a70b2114"
+aws ssm start-session --document-name AWS-StartPortForwardingSessionToRemoteHost --parameters '{"host":["serverlessauroralambda-dbcluster224236ef-wmudazlvx4hc.cluster-cp1pjbcco8nm.us-east-1.rds.amazonaws.com"],"portNumber":["5432"], "localPortNumber":["5432"]}' --target "i-04c2d1f249147eb37"
 ```
 
 Postgres

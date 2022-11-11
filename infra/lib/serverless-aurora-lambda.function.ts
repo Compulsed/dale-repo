@@ -1,3 +1,4 @@
+import 'source-map-support/register'
 import { Context, APIGatewayProxyResult, APIGatewayEvent } from 'aws-lambda'
 import { GetSecretValueCommand, SecretsManagerClient } from '@aws-sdk/client-secrets-manager'
 import { Client } from 'pg'
