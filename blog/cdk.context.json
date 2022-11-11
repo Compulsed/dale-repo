@@ -1,0 +1,90 @@
+{
+  "availability-zones:account=878489430596:region=us-east-1": [
+    "us-east-1a",
+    "us-east-1b",
+    "us-east-1c",
+    "us-east-1d",
+    "us-east-1e",
+    "us-east-1f"
+  ],
+  "ami:account=878489430596:filters.image-type.0=machine:filters.name.0=amzn-ami-vpc-nat-*:filters.state.0=available:owners.0=amazon:region=us-east-1": "ami-0cc6fa590dc4d36eb",
+  "vpc-provider:account=878489430596:filter.tag:Name=DatabaseInfrastructure/Vpc:region=us-east-1:returnAsymmetricSubnets=true": {
+    "vpcId": "vpc-0de201c51a2f4cb12",
+    "vpcCidrBlock": "10.0.0.0/16",
+    "availabilityZones": [],
+    "subnetGroups": [
+      {
+        "name": "public",
+        "type": "Public",
+        "subnets": [
+          {
+            "subnetId": "subnet-0681c36207c8a0dbc",
+            "cidr": "10.0.0.0/20",
+            "availabilityZone": "us-east-1a",
+            "routeTableId": "rtb-0815394398021f70f"
+          },
+          {
+            "subnetId": "subnet-0f118c3f54c5c57dd",
+            "cidr": "10.0.16.0/20",
+            "availabilityZone": "us-east-1b",
+            "routeTableId": "rtb-0ad488e9ee32dee15"
+          },
+          {
+            "subnetId": "subnet-02e56321e41724f4f",
+            "cidr": "10.0.32.0/20",
+            "availabilityZone": "us-east-1c",
+            "routeTableId": "rtb-0e90738eff8c67912"
+          }
+        ]
+      },
+      {
+        "name": "private-isolated",
+        "type": "Isolated",
+        "subnets": [
+          {
+            "subnetId": "subnet-0ab1cb29a71e37cd8",
+            "cidr": "10.0.96.0/20",
+            "availabilityZone": "us-east-1a",
+            "routeTableId": "rtb-07e9e4b6bbe234316"
+          },
+          {
+            "subnetId": "subnet-0c13b164b92e1a291",
+            "cidr": "10.0.112.0/20",
+            "availabilityZone": "us-east-1b",
+            "routeTableId": "rtb-045d3175662879578"
+          },
+          {
+            "subnetId": "subnet-0c8e7edc9321ac657",
+            "cidr": "10.0.128.0/20",
+            "availabilityZone": "us-east-1c",
+            "routeTableId": "rtb-0d721240b86367d55"
+          }
+        ]
+      },
+      {
+        "name": "private-egress",
+        "type": "Private",
+        "subnets": [
+          {
+            "subnetId": "subnet-070a05f1fa431e4f9",
+            "cidr": "10.0.48.0/20",
+            "availabilityZone": "us-east-1a",
+            "routeTableId": "rtb-0a353b19c0b88d1e1"
+          },
+          {
+            "subnetId": "subnet-03eadc247cdc9a238",
+            "cidr": "10.0.64.0/20",
+            "availabilityZone": "us-east-1b",
+            "routeTableId": "rtb-0e10a4139b745f482"
+          },
+          {
+            "subnetId": "subnet-072c25a4afe6ea796",
+            "cidr": "10.0.80.0/20",
+            "availabilityZone": "us-east-1c",
+            "routeTableId": "rtb-0006aa1547da86316"
+          }
+        ]
+      }
+    ]
+  }
+}

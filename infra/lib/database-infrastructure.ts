@@ -110,6 +110,12 @@ export class DatabaseInfrastructure extends cdk.Stack {
 
     new CfnOutput(this, 'DatabaseSecretArn', {
       value: dbCluster.secret?.secretFullArn ?? '',
+      exportName: 'DatabaseSecretArn',
+    })
+
+    new CfnOutput(this, 'VpcName', {
+      value: dbCluster.secret?.secretFullArn ?? '',
+      exportName: 'VpcName',
     })
   }
 }
