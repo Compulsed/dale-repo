@@ -14,10 +14,10 @@ import {
   BastionHostLinux,
   NatProvider,
 } from 'aws-cdk-lib/aws-ec2'
-import { Aspects, Duration } from 'aws-cdk-lib'
+import { Aspects, CfnOutput, Duration } from 'aws-cdk-lib'
 import { CfnDBCluster } from 'aws-cdk-lib/aws-rds'
 
-export class ServerlessAuroraLambda extends cdk.Stack {
+export class DatabaseInfrastructure extends cdk.Stack {
   constructor(scope: Construct, id: string, props?: cdk.StackProps) {
     super(scope, id, props)
 
@@ -74,7 +74,7 @@ export class ServerlessAuroraLambda extends cdk.Stack {
       },
     })
 
-    new BastionHostLinux(this, 'BastionHost', {
+    const bastion = new BastionHostLinux(this, 'BastionHost', {
       vpc,
       subnetSelection: vpc.selectSubnets({
         subnetType: SubnetType.PRIVATE_WITH_EGRESS,
@@ -85,7 +85,7 @@ export class ServerlessAuroraLambda extends cdk.Stack {
       runtime: Runtime.NODEJS_16_X,
       architecture: Architecture.ARM_64,
       timeout: Duration.seconds(30),
-      entry: __dirname + '/serverless-aurora-lambda.function.ts',
+      entry: __dirname + '/database-infrastructure-lambda.function.ts',
       environment: {
         databaseSecretArn: dbCluster.secret?.secretFullArn ?? '',
       },
@@ -102,6 +102,14 @@ export class ServerlessAuroraLambda extends cdk.Stack {
 
     new LambdaRestApi(this, 'ApiGateway', {
       handler: apiFunction,
+    })
+
+    new CfnOutput(this, 'BastionInstanceId', {
+      value: bastion.instanceId,
+    })
+
+    new CfnOutput(this, 'DatabaseSecretArn', {
+      value: dbCluster.secret?.secretFullArn ?? '',
     })
   }
 }

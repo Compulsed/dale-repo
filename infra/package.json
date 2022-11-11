@@ -1,8 +1,8 @@
 {
-  "name": "serverless-aurora-lambda",
+  "name": "database-infrastructure",
   "version": "0.1.0",
   "bin": {
-    "serverless-aurora-lambda": "bin/serverless-aurora-lambda.js"
+    "database-infrastructure": "bin/database-infrastructure.js"
   },
   "scripts": {
     "build": "tsc",

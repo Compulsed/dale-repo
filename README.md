@@ -22,6 +22,13 @@ Limitations:
 
 - Lambda triggers in aurora
 
+**Dependencies**
+
+- AWS Cli
+- AWS Cli Systems manager
+- Jq
+- NodeJS
+
 **Commands:**
 
 SSM

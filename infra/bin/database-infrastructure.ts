@@ -1,10 +1,10 @@
 #!/usr/bin/env node
 import 'source-map-support/register'
 import * as cdk from 'aws-cdk-lib'
-import { ServerlessAuroraLambda } from '../lib/serverless-aurora-lambda'
+import { DatabaseInfrastructure } from '../lib/database-infrastructure'
 
 const app = new cdk.App()
 
-new ServerlessAuroraLambda(app, 'ServerlessAurora', {
+new DatabaseInfrastructure(app, 'DatabaseInfrastructure', {
   env: { account: process.env.CDK_DEFAULT_ACCOUNT, region: process.env.CDK_DEFAULT_REGION },
 })

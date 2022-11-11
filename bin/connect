@@ -1,0 +1,23 @@
+#!/bin/bash
+set -euo pipefail
+
+usage="USAGE: $(basename "$0") [-s|--stage] <stage>
+where:
+    -h | --help         show this help text"
+
+while [ $# -gt 0 ]; do
+    if [[ $1 =~ "--"* ]]; then
+        case $1 in
+            --help|-h) echo "$usage"; exit; ;;
+        esac
+    fi
+    shift
+done
+
+DATABASE_INFRA_STACK="DatabaseInfrastructure"
+
+BASTION_INSTANCE_ID=$(aws cloudformation describe-stacks --stack-name "$DATABASE_INFRA_STACK" --query "Stacks[0].Outputs[?OutputKey=='BastionInstanceId'].OutputValue" --output text)
+
+aws ssm \
+  start-session \
+  --target "${BASTION_INSTANCE_ID}"

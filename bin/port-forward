@@ -1,0 +1,34 @@
+#!/bin/bash
+set -euo pipefail
+
+usage="USAGE: $(basename "$0") [-s|--stage] <stage>
+where:
+    -h | --help         show this help text"
+
+while [ $# -gt 0 ]; do
+    if [[ $1 =~ "--"* ]]; then
+        case $1 in
+            --help|-h) echo "$usage"; exit; ;;
+        esac
+    fi
+    shift
+done
+
+DATABASE_INFRA_STACK="DatabaseInfrastructure"
+
+BASTION_INSTANCE_ID=$(aws cloudformation describe-stacks --stack-name "$DATABASE_INFRA_STACK" --query "Stacks[0].Outputs[?OutputKey=='BastionInstanceId'].OutputValue" --output text)
+DATABASE_SECRET_ARN=$(aws cloudformation describe-stacks --stack-name "$DATABASE_INFRA_STACK" --query "Stacks[0].Outputs[?OutputKey=='DatabaseSecretArn'].OutputValue" --output text)
+DATABASE_HOST=$(aws secretsmanager get-secret-value --secret-id "$DATABASE_SECRET_ARN" | jq --raw-output .SecretString | jq -r ."host" )
+DATABASE_PASSWORD=$(aws secretsmanager get-secret-value --secret-id "$DATABASE_SECRET_ARN" | jq --raw-output .SecretString | jq -r ."password" )
+
+echo "Port forwarding from localhost to database via bastion"
+echo "-> Bastion Instance Id: ${BASTION_INSTANCE_ID}"
+echo "-> Database secret arn: ${DATABASE_SECRET_ARN}"
+echo "-> Database host name: ${DATABASE_HOST}"
+echo "-> Database password: ${DATABASE_PASSWORD}"
+
+aws \
+  ssm start-session \
+  --document-name AWS-StartPortForwardingSessionToRemoteHost \
+  --parameters "{\"host\":[\"databaseinfrastructure-dbcluster224236ef-3mbxyryd0ipg.cluster-cp1pjbcco8nm.us-east-1.rds.amazonaws.com\"],\"portNumber\":[\"5432\"], \"localPortNumber\":[\"5432\"]}" \
+  --target "${BASTION_INSTANCE_ID}"
