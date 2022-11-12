@@ -29,7 +29,27 @@ export class BlogInfrastructure extends cdk.Stack {
         databaseSecretArn: secret.secretFullArn ?? '',
       },
       bundling: {
-        externalModules: ['pg-native'],
+        externalModules: [
+          // pg imports
+          'pg-native',
+
+          // Mikro-orm imports -- is there a better way?
+          '@mikro-orm/entity-generator',
+          '@mikro-orm/seeder',
+          'sqlite3',
+          'better-sqlite3',
+          'mysql',
+          'mysql2',
+          'oracledb',
+          '@mikro-orm/mongodb',
+          '@mikro-orm/mysql',
+          '@mikro-orm/mariadb',
+          'pg-query-stream',
+          '@mikro-orm/sqlite',
+          '@mikro-orm/better-sqlite',
+          'tedious',
+        ],
+        inject: ['./lib/esbuild-mikroorm-patch.ts'],
       },
       vpc,
       vpcSubnets: vpc.selectSubnets({

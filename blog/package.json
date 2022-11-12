@@ -16,6 +16,7 @@
     "@types/node": "10.17.27",
     "@types/pg": "^8.6.5",
     "@types/prettier": "2.6.0",
+    "@types/uuid": "^8.3.4",
     "aws-cdk": "2.50.0",
     "esbuild": "^0.15.13",
     "jest": "^27.5.1",
@@ -25,9 +26,21 @@
   },
   "dependencies": {
     "@aws-sdk/client-secrets-manager": "^3.204.0",
+    "@mikro-orm/cli": "^5.5.3",
+    "@mikro-orm/core": "^5.5.3",
+    "@mikro-orm/migrations": "^5.5.3",
+    "@mikro-orm/postgresql": "^5.5.3",
+    "@mikro-orm/reflection": "^5.5.3",
     "aws-cdk-lib": "2.50.0",
     "constructs": "^10.0.0",
     "pg": "^8.8.0",
     "source-map-support": "^0.5.21"
+  },
+  "mikro-orm": {
+    "useTsNode": true,
+    "configPaths": [
+      "./mikro-orm.config.ts",
+      "./mikro-orm.config.js"
+    ]
   }
 }

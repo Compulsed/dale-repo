@@ -1,7 +1,13 @@
 import 'source-map-support/register'
+import 'reflect-metadata'
+
 import { Context, APIGatewayProxyResult, APIGatewayEvent } from 'aws-lambda'
 import { GetSecretValueCommand, SecretsManagerClient } from '@aws-sdk/client-secrets-manager'
 import { Client } from 'pg'
+import { MikroORM } from '@mikro-orm/postgresql'
+import { LoadStrategy } from '@mikro-orm/core'
+import type { PostgreSqlDriver } from '@mikro-orm/postgresql' // or any other driver package
+import { Book } from './entities/Book'
 
 const secretsManagerClient = new SecretsManagerClient({ region: 'us-east-1' })
 
@@ -16,6 +22,7 @@ export const handler = async (event: APIGatewayEvent, context: Context): Promise
 
   const secretValues = JSON.parse(secret.SecretString ?? '{}')
 
+  // Raw PG
   const client = new Client({
     user: secretValues.username,
     host: secretValues.host,
@@ -32,10 +39,47 @@ export const handler = async (event: APIGatewayEvent, context: Context): Promise
 
   await client.end()
 
+  // Mikro
+  const orm = await MikroORM.init<PostgreSqlDriver>({
+    type: 'postgresql',
+
+    // TODO: Change this to a custom database per app
+    dbName: 'postgres',
+    user: secretValues.username,
+    host: secretValues.host,
+    password: secretValues.password,
+    port: parseInt(secretValues.port, 10),
+
+    debug: true,
+
+    migrations: {
+      path: './lib/migrations',
+      tableName: 'migrations',
+      transactional: true,
+    },
+
+    entities: [Book],
+    loadStrategy: LoadStrategy.JOINED,
+    discovery: { warnWhenNoEntities: false },
+
+    // TODO: These values might be incorrect
+    // entities: ['./lib/entities'], // path to our JS entities (dist), relative to `baseDir`
+    // entitiesTs: ['./lib/entities'], // path to our TS entities (src), relative to `baseDir`
+  })
+
+  console.log(orm.em)
+
+  const bookRepository = orm.em.getRepository(Book)
+
+  const totalBooks = await bookRepository.count()
+
+  console.log('Total books', totalBooks)
+
   return {
     statusCode: 200,
     body: JSON.stringify({
       message: `DB Response: ${dbResponse}`,
+      totalBooks,
       secretArn,
     }),
   }
