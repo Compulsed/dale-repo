@@ -49,6 +49,7 @@ export class BlogInfrastructure extends cdk.Stack {
           '@mikro-orm/better-sqlite',
           'tedious',
         ],
+        // https://github.com/mikro-orm/mikro-orm/discussions/2219
         inject: ['./lib/esbuild-mikroorm-patch.ts'],
       },
       vpc,

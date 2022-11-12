@@ -59,12 +59,11 @@ export const handler = async (event: APIGatewayEvent, context: Context): Promise
     },
 
     entities: [Book],
-    loadStrategy: LoadStrategy.JOINED,
-    discovery: { warnWhenNoEntities: false },
-
-    // TODO: These values might be incorrect
     // entities: ['./lib/entities'], // path to our JS entities (dist), relative to `baseDir`
     // entitiesTs: ['./lib/entities'], // path to our TS entities (src), relative to `baseDir`
+
+    loadStrategy: LoadStrategy.JOINED,
+    discovery: { warnWhenNoEntities: false },
   })
 
   console.log(orm.em)
