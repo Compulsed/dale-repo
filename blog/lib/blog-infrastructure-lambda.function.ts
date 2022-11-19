@@ -7,14 +7,15 @@ import { Book } from './entities/Book'
 import { getOrmConfig } from './orm-config'
 import { ApolloServer } from '@apollo/server'
 import { startServerAndCreateLambdaHandler } from '@as-integrations/aws-lambda'
+import { getEnvironment } from './utils/get-environment'
 
 const ormPromise = Promise.resolve().then(async () => {
   const secretsManagerClient = new SecretsManagerClient({ region: 'us-east-1' })
 
-  const secretArn = process.env.DATABASE_SECRET_ARN
+  const { DATABASE_SECRET_ARN } = getEnvironment(['DATABASE_SECRET_ARN'])
 
   const command = new GetSecretValueCommand({
-    SecretId: secretArn,
+    SecretId: DATABASE_SECRET_ARN,
   })
 
   const secret = await secretsManagerClient.send(command)
@@ -43,7 +44,6 @@ const typeDefs = `#graphql
 
   type Query {
     hello: String
-
     books: [Book]
   }
 `
