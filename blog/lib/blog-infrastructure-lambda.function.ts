@@ -1,5 +1,9 @@
 import 'source-map-support/register'
 
+import { getOtelSdk } from './otel'
+import opentelemetry from '@opentelemetry/api'
+
+// All other deps
 import { GetSecretValueCommand, SecretsManagerClient } from '@aws-sdk/client-secrets-manager'
 import { MikroORM, SqlEntityManager } from '@mikro-orm/postgresql'
 import type { PostgreSqlDriver } from '@mikro-orm/postgresql'
@@ -7,13 +11,10 @@ import { Book } from './entities/Book'
 import { getOrmConfig } from './orm-config'
 import { ApolloServer } from '@apollo/server'
 import { startServerAndCreateLambdaHandler } from '@as-integrations/aws-lambda'
-import { NodeSDK } from '@opentelemetry/sdk-node'
-import { getNodeAutoInstrumentations } from '@opentelemetry/auto-instrumentations-node'
-import { OTLPTraceExporter } from '@opentelemetry/exporter-trace-otlp-proto'
-import opentelemetry from '@opentelemetry/api'
 import { APIGatewayEvent, Context } from 'aws-lambda'
 import _ from 'lodash'
 
+// Custom imports
 import { getEnvironment } from './utils/get-environment'
 
 const tracer = opentelemetry.trace.getTracer('my-service-tracer')
@@ -54,17 +55,6 @@ const getOrm = _.memoize(async () => {
 
   return orm
 })
-
-const otelPromise = () => {
-  const traceExporter = new OTLPTraceExporter()
-
-  const sdk = new NodeSDK({
-    traceExporter,
-    instrumentations: [getNodeAutoInstrumentations()],
-  })
-
-  return sdk.start()
-}
 
 const typeDefs = `#graphql
   type Book {
@@ -127,27 +117,31 @@ const server = new ApolloServer({
   resolvers,
 })
 
+// TODO: Consider putting this inside the handler & caching for otel insights
+//  or use a `inject` to ensure the otel SDK is loaded before this file
+const serverHandler = startServerAndCreateLambdaHandler(server, {
+  context: async ({ event, context }) => {
+    const orm = await tracer.startActiveSpan('orm-setup', async (span) => {
+      const orm = await getOrm()
+      span.end()
+      return orm
+    })
+
+    const em = orm.em.fork()
+
+    return {
+      lambdaEvent: event,
+      lambdaContext: context,
+      em,
+    }
+  },
+})
+
 export const handler = async (event: APIGatewayEvent, context: Context, cb: any): Promise<any> => {
-  await otelPromise()
+  await getOtelSdk()
 
   return tracer.startActiveSpan('handler', async (span) => {
-    const response = await startServerAndCreateLambdaHandler(server, {
-      context: async ({ event, context }) => {
-        const orm = await tracer.startActiveSpan('orm-setup', async (span) => {
-          const orm = await getOrm()
-          span.end()
-          return orm
-        })
-
-        const em = orm.em.fork()
-
-        return {
-          lambdaEvent: event,
-          lambdaContext: context,
-          em,
-        }
-      },
-    })(event, context, cb)
+    const response = await serverHandler(event, context, cb)
 
     span.end()
 

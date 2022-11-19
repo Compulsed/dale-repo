@@ -43,6 +43,15 @@ export class BlogInfrastructure extends cdk.Stack {
       bundling: {
         preCompilation: true, // Runs TSC before deploying
 
+        // Fixes an issue with '@opentelemetry/sdk-node' -> thriftrw -> bufrw throwing an error
+        //  on initialization
+        nodeModules: [
+          '@opentelemetry/api',
+          '@opentelemetry/sdk-node',
+          '@opentelemetry/auto-instrumentations-node',
+          '@opentelemetry/exporter-trace-otlp-proto',
+        ],
+
         externalModules: [
           // pg imports
           'pg-native',
