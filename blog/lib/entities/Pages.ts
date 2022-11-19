@@ -13,7 +13,7 @@ abstract class CustomBaseEntity {
 }
 
 @Entity()
-export class Book extends CustomBaseEntity {
+export class Pages extends CustomBaseEntity {
   @Property({ type: 'text' })
   title!: string
 }

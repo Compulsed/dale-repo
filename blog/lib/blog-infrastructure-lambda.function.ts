@@ -6,6 +6,8 @@ import { Client } from 'pg'
 import { MikroORM } from '@mikro-orm/postgresql'
 import type { PostgreSqlDriver } from '@mikro-orm/postgresql'
 import { Book } from './entities/Book'
+import { getOrmConfig } from './orm-config'
+import { Pages } from './entities/Pages'
 
 const secretsManagerClient = new SecretsManagerClient({ region: 'us-east-1' })
 
@@ -37,29 +39,16 @@ export const handler = async (event: APIGatewayEvent, context: Context): Promise
 
   await client.end()
 
-  // Mikro
-  const orm = await MikroORM.init<PostgreSqlDriver>({
-    type: 'postgresql',
-
-    // TODO: Change this to a custom database per app
+  const ormConfig = getOrmConfig({
     dbName: 'postgres',
     user: secretValues.username,
     host: secretValues.host,
     password: secretValues.password,
     port: parseInt(secretValues.port, 10),
-
-    debug: true,
-
-    migrations: {
-      path: './lib/migrations',
-      tableName: 'migrations',
-      transactional: true,
-    },
-
-    entities: [Book],
   })
 
-  console.log(orm.em)
+  // Mikro
+  const orm = await MikroORM.init<PostgreSqlDriver>(ormConfig)
 
   const bookRepository = orm.em.getRepository(Book)
 
@@ -67,11 +56,18 @@ export const handler = async (event: APIGatewayEvent, context: Context): Promise
 
   console.log('Total books', totalBooks)
 
+  const pagesRepository = orm.em.getRepository(Pages)
+
+  const totalPages = await pagesRepository.count()
+
+  console.log('Total pages', totalBooks)
+
   return {
     statusCode: 200,
     body: JSON.stringify({
       message: `DB Response: ${dbResponse}`,
       totalBooks,
+      totalPages,
       secretArn,
     }),
   }
