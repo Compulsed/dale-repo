@@ -7,6 +7,10 @@ import { Book } from './entities/Book'
 import { getOrmConfig } from './orm-config'
 import { ApolloServer } from '@apollo/server'
 import { startServerAndCreateLambdaHandler } from '@as-integrations/aws-lambda'
+import { NodeSDK } from '@opentelemetry/sdk-node'
+import { getNodeAutoInstrumentations } from '@opentelemetry/auto-instrumentations-node'
+import { OTLPTraceExporter } from '@opentelemetry/exporter-trace-otlp-proto'
+
 import { getEnvironment } from './utils/get-environment'
 
 const ormPromise = Promise.resolve().then(async () => {
@@ -33,6 +37,19 @@ const ormPromise = Promise.resolve().then(async () => {
 
   return MikroORM.init<PostgreSqlDriver>(ormConfig)
 })
+
+const otelPromise = () => {
+  // The Trace Exporter exports the data to Honeycomb and uses
+  // the environment variables for endpoint, service name, and API Key.
+  const traceExporter = new OTLPTraceExporter()
+
+  const sdk = new NodeSDK({
+    traceExporter,
+    instrumentations: [getNodeAutoInstrumentations()],
+  })
+
+  sdk.start()
+}
 
 const typeDefs = `#graphql
   type Book {
