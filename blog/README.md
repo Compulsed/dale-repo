@@ -13,9 +13,11 @@ https://github.com/mikro-orm/mikro-orm/discussions/2219
 - `npx mikro-orm migration:up`
 - `npx cdk deploy`
 
-**Running locally**
+**OTel Notes**
 
-- `LOCAL_INVOKE=y npx ts-node ./lib/invoker.ts`
+- Requires node modules in ESBuild to auto-instrument particular packages
+  - Increases cold starts if some packages are excluded
+  - Only includes manual instrumentation, fs, exception, & some HTTP if we bundle these deps
 
 **TODO**
 

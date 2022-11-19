@@ -43,13 +43,19 @@ export class BlogInfrastructure extends cdk.Stack {
       bundling: {
         preCompilation: true, // Runs TSC before deploying
 
-        // Fixes an issue with '@opentelemetry/sdk-node' -> thriftrw -> bufrw throwing an error
-        //  on initialization
         nodeModules: [
+          // Required for 2 reasons
+          //  - Fixes an issue with '@opentelemetry/sdk-node' -> thriftrw -> bufrw throwing an error on function initialization
+          //  - OTEL does not work if `sdk-node` and `auto-instrumentations-node` are not included
           '@opentelemetry/api',
           '@opentelemetry/sdk-node',
           '@opentelemetry/auto-instrumentations-node',
-          '@opentelemetry/exporter-trace-otlp-proto',
+
+          // Requires these to be installed as node_modules otherwise
+          //  auto-instrumentation does not work. Impacts of including = ~700ms - 1s to cold start
+          'graphql',
+          'pg',
+          '@aws-sdk/client-secrets-manager',
         ],
 
         externalModules: [

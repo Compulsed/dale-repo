@@ -4,17 +4,17 @@ import { getOtelSdk } from './otel'
 import opentelemetry from '@opentelemetry/api'
 
 // All other deps
+import _ from 'lodash'
+import { APIGatewayEvent, Context } from 'aws-lambda'
 import { GetSecretValueCommand, SecretsManagerClient } from '@aws-sdk/client-secrets-manager'
 import { MikroORM, SqlEntityManager } from '@mikro-orm/postgresql'
 import type { PostgreSqlDriver } from '@mikro-orm/postgresql'
-import { Book } from './entities/Book'
-import { getOrmConfig } from './orm-config'
 import { ApolloServer } from '@apollo/server'
 import { startServerAndCreateLambdaHandler } from '@as-integrations/aws-lambda'
-import { APIGatewayEvent, Context } from 'aws-lambda'
-import _ from 'lodash'
 
 // Custom imports
+import { Book } from './entities/Book'
+import { getOrmConfig } from './orm-config'
 import { getEnvironment } from './utils/get-environment'
 
 const tracer = opentelemetry.trace.getTracer('my-service-tracer')
@@ -47,6 +47,7 @@ const getOrm = _.memoize(async () => {
     port: parseInt(secretValues.port, 10),
   })
 
+  // 600ms - 2s to initialize on cold-start due to pg-connect
   const orm = await tracer.startActiveSpan('orm-init', async (span) => {
     const orm = await MikroORM.init<PostgreSqlDriver>(ormConfig)
     span.end()
@@ -137,6 +138,9 @@ const serverHandler = startServerAndCreateLambdaHandler(server, {
   },
 })
 
+// p50 ~3.3 - 3.7s
+// pg-connect ~2s
+// module / other init ~1.3-1.7s
 export const handler = async (event: APIGatewayEvent, context: Context, cb: any): Promise<any> => {
   await getOtelSdk()
 

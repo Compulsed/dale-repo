@@ -9,7 +9,13 @@ const traceExporter = new OTLPTraceExporter()
 
 export const sdk = new NodeSDK({
   traceExporter,
-  instrumentations: [getNodeAutoInstrumentations()],
+  instrumentations: [
+    getNodeAutoInstrumentations({
+      '@opentelemetry/instrumentation-fs': {
+        enabled: false,
+      },
+    }),
+  ],
 })
 
 diag.setLogger(new DiagConsoleLogger(), DiagLogLevel.WARN)
