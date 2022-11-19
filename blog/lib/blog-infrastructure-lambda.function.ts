@@ -10,19 +10,30 @@ import { startServerAndCreateLambdaHandler } from '@as-integrations/aws-lambda'
 import { NodeSDK } from '@opentelemetry/sdk-node'
 import { getNodeAutoInstrumentations } from '@opentelemetry/auto-instrumentations-node'
 import { OTLPTraceExporter } from '@opentelemetry/exporter-trace-otlp-proto'
+import opentelemetry from '@opentelemetry/api'
+import { APIGatewayEvent, Context } from 'aws-lambda'
+import _ from 'lodash'
 
 import { getEnvironment } from './utils/get-environment'
 
-const ormPromise = Promise.resolve().then(async () => {
-  const secretsManagerClient = new SecretsManagerClient({ region: 'us-east-1' })
+const tracer = opentelemetry.trace.getTracer('my-service-tracer')
 
-  const { DATABASE_SECRET_ARN } = getEnvironment(['DATABASE_SECRET_ARN'])
+const getOrm = _.memoize(async () => {
+  const secret = await tracer.startActiveSpan('get-secret', async (span) => {
+    const secretsManagerClient = new SecretsManagerClient({ region: 'us-east-1' })
 
-  const command = new GetSecretValueCommand({
-    SecretId: DATABASE_SECRET_ARN,
+    const { DATABASE_SECRET_ARN } = getEnvironment(['DATABASE_SECRET_ARN'])
+
+    const command = new GetSecretValueCommand({
+      SecretId: DATABASE_SECRET_ARN,
+    })
+
+    const secret = await secretsManagerClient.send(command)
+
+    span.end()
+
+    return secret
   })
-
-  const secret = await secretsManagerClient.send(command)
 
   const secretValues = JSON.parse(secret.SecretString ?? '{}')
 
@@ -35,12 +46,16 @@ const ormPromise = Promise.resolve().then(async () => {
     port: parseInt(secretValues.port, 10),
   })
 
-  return MikroORM.init<PostgreSqlDriver>(ormConfig)
+  const orm = await tracer.startActiveSpan('orm-init', async (span) => {
+    const orm = await MikroORM.init<PostgreSqlDriver>(ormConfig)
+    span.end()
+    return orm
+  })
+
+  return orm
 })
 
 const otelPromise = () => {
-  // The Trace Exporter exports the data to Honeycomb and uses
-  // the environment variables for endpoint, service name, and API Key.
   const traceExporter = new OTLPTraceExporter()
 
   const sdk = new NodeSDK({
@@ -48,7 +63,7 @@ const otelPromise = () => {
     instrumentations: [getNodeAutoInstrumentations()],
   })
 
-  sdk.start()
+  return sdk.start()
 }
 
 const typeDefs = `#graphql
@@ -78,10 +93,16 @@ const resolvers = {
     hello: (root: any, args: any, context: LambdaContext) => {
       return 'world'
     },
-    books: (root: any, args: any, context: LambdaContext) => {
+    books: async (root: any, args: any, context: LambdaContext) => {
       const bookRepository = context.em.getRepository(Book)
 
-      return bookRepository.findAll()
+      const books = await tracer.startActiveSpan('find-books', async (span) => {
+        const books = await bookRepository.findAll()
+        span.end()
+        return books
+      })
+
+      return books
     },
   },
   Mutation: {
@@ -106,16 +127,30 @@ const server = new ApolloServer({
   resolvers,
 })
 
-export const handler = startServerAndCreateLambdaHandler(server, {
-  context: async ({ event, context }) => {
-    const orm = await ormPromise
+export const handler = async (event: APIGatewayEvent, context: Context, cb: any): Promise<any> => {
+  await otelPromise()
 
-    const em = orm.em.fork()
+  return tracer.startActiveSpan('handler', async (span) => {
+    const response = await startServerAndCreateLambdaHandler(server, {
+      context: async ({ event, context }) => {
+        const orm = await tracer.startActiveSpan('orm-setup', async (span) => {
+          const orm = await getOrm()
+          span.end()
+          return orm
+        })
 
-    return {
-      lambdaEvent: event,
-      lambdaContext: context,
-      em,
-    }
-  },
-})
+        const em = orm.em.fork()
+
+        return {
+          lambdaEvent: event,
+          lambdaContext: context,
+          em,
+        }
+      },
+    })(event, context, cb)
+
+    span.end()
+
+    return response
+  })
+}

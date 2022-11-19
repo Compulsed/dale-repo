@@ -12,9 +12,7 @@
       "runtimeArgs": ["-r", "ts-node/register"],
       "cwd": "${workspaceRoot}",
       "protocol": "inspector",
-      "env": {
-        "LOCAL_INVOKE": "y"
-      },
+      "envFile": "${workspaceFolder:⛺️ Root}/.env",
       "internalConsoleOptions": "openOnSessionStart"
     }
   ]

@@ -8,7 +8,12 @@ import * as secretsManager from 'aws-cdk-lib/aws-secretsmanager'
 import { Duration } from 'aws-cdk-lib'
 import { getEnvironment } from './utils/get-environment'
 
-const { STAGE } = getEnvironment(['STAGE'])
+const { STAGE, OTEL_EXPORTER_OTLP_ENDPOINT, OTEL_EXPORTER_OTLP_HEADERS, OTEL_SERVICE_NAME } = getEnvironment([
+  'STAGE',
+  'OTEL_EXPORTER_OTLP_ENDPOINT',
+  'OTEL_EXPORTER_OTLP_HEADERS',
+  'OTEL_SERVICE_NAME',
+])
 
 export class BlogInfrastructure extends cdk.Stack {
   constructor(scope: Construct, id: string, props?: cdk.StackProps) {
@@ -25,10 +30,14 @@ export class BlogInfrastructure extends cdk.Stack {
     const apiFunction = new NodejsFunction(this, 'ApiFunction', {
       runtime: Runtime.NODEJS_16_X,
       architecture: Architecture.ARM_64,
+      memorySize: 1024,
       timeout: Duration.seconds(30),
       entry: __dirname + '/blog-infrastructure-lambda.function.ts',
       environment: {
         STAGE,
+        OTEL_EXPORTER_OTLP_ENDPOINT,
+        OTEL_EXPORTER_OTLP_HEADERS,
+        OTEL_SERVICE_NAME,
         DATABASE_SECRET_ARN: secret.secretFullArn ?? '',
       },
       bundling: {

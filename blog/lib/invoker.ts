@@ -17,4 +17,6 @@ import { handler } from './blog-infrastructure-lambda.function'
   const response = await handler(event, context, cb)
 
   console.log(response)
+
+  // process.exit(0)
 })()
