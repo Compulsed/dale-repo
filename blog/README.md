@@ -19,6 +19,9 @@ https://github.com/mikro-orm/mikro-orm/discussions/2219
 
 **TODO**
 
-- Improvements, support different database names
-- Mikro cli fetches secret
-- Support different stack deployments
+- ✅ Improvements, support different database names
+- ✅ Mikro cli fetches secret
+- ✅ Support different stack deployments
+- Local express support
+- Custom domain name
+- GraphQL URL path

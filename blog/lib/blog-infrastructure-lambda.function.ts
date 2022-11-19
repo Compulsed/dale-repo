@@ -46,6 +46,10 @@ const typeDefs = `#graphql
     hello: String
     books: [Book]
   }
+
+  type Mutation {
+    createBook: Book
+  }
 `
 
 type LambdaContext = {
@@ -61,6 +65,21 @@ const resolvers = {
       const bookRepository = context.em.getRepository(Book)
 
       return bookRepository.findAll()
+    },
+  },
+  Mutation: {
+    createBook: async (root: any, args: any, context: LambdaContext) => {
+      const bookRepository = context.em.getRepository(Book)
+
+      const book = new Book()
+
+      bookRepository.create(book)
+
+      book.title = 'Custom title from API'
+
+      await bookRepository.persistAndFlush(book)
+
+      return book
     },
   },
 }
