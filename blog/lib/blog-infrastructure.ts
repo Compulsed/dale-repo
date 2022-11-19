@@ -29,6 +29,8 @@ export class BlogInfrastructure extends cdk.Stack {
         databaseSecretArn: secret.secretFullArn ?? '',
       },
       bundling: {
+        preCompilation: true,
+
         externalModules: [
           // pg imports
           'pg-native',
@@ -49,7 +51,6 @@ export class BlogInfrastructure extends cdk.Stack {
           '@mikro-orm/better-sqlite',
           'tedious',
         ],
-        // https://github.com/mikro-orm/mikro-orm/discussions/2219
         inject: ['./lib/esbuild-mikroorm-patch.ts'],
       },
       vpc,
