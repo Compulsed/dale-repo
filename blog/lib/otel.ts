@@ -11,6 +11,7 @@ export const sdk = new NodeSDK({
   traceExporter,
   instrumentations: [
     getNodeAutoInstrumentations({
+      // Creates too much noise in spans
       '@opentelemetry/instrumentation-fs': {
         enabled: false,
       },

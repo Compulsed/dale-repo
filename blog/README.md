@@ -16,7 +16,7 @@ https://github.com/mikro-orm/mikro-orm/discussions/2219
 **OTel Notes**
 
 - Requires node modules in ESBuild to auto-instrument particular packages
-  - Increases cold starts if some packages are excluded
+  - Increases cold starts if some packages are excluded (unsure how much)
   - Only includes manual instrumentation, fs, exception, & some HTTP if we bundle these deps
 
 **TODO**
@@ -26,8 +26,9 @@ Setup:
 - ✅ Improvements, support different database names
 - ✅ Mikro cli fetches secret
 - ✅ Support different stack deployments
+- ✅ GraphQL connections
+- OTel exports are not missed
 - Local express support
-- GraphQL connections
 - Custom domain name
 - GraphQL URL path
 - CI/CD Pipeline

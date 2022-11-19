@@ -138,9 +138,11 @@ const serverHandler = startServerAndCreateLambdaHandler(server, {
   },
 })
 
-// p50 ~3.3 - 3.7s
-// pg-connect ~2s
-// module / aws / other init ~1.3-1.7s (unable to see this amount)
+/* Performance:
+    p50 ~3.3 - 3.7s
+      - ~2s pg-connect
+      - ~1.3-1.7s OTel init, js module, apollo server, etc
+*/
 export const handler = async (event: APIGatewayEvent, context: Context, cb: any): Promise<any> => {
   await getOtelSdk()
 

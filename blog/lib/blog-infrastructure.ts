@@ -90,6 +90,9 @@ export class BlogInfrastructure extends cdk.Stack {
 
     new LambdaRestApi(this, 'ApiGateway', {
       handler: apiFunction,
+      deployOptions: {
+        stageName: 'graphql',
+      },
     })
   }
 }
