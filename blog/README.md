@@ -13,6 +13,10 @@ https://github.com/mikro-orm/mikro-orm/discussions/2219
 - `npx mikro-orm migration:up`
 - `npx cdk deploy`
 
+**Running locally**
+
+- `LOCAL_INVOKE=y npx ts-node ./lib/invoker.ts`
+
 **TODO**
 
 - Improvements, support different database names

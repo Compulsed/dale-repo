@@ -1,7 +1,16 @@
 {
   "folders": [
     {
+      "name": "⛺️ Root",
       "path": "."
+    },
+    {
+      "name": "⚙️ Infra",
+      "path": "./infra"
+    },
+    {
+      "name": "🤖 Blog",
+      "path": "./blog"
     }
   ],
   "settings": {
@@ -9,10 +18,9 @@
     "editor.insertSpaces": true,
     "editor.detectIndentation": false,
     "editor.defaultFormatter": "esbenp.prettier-vscode",
-    "editor.formatOnSave": true,
-    "editor.matchBrackets": "always"
+    "editor.formatOnSave": true
   },
   "extensions": {
-    "recommendations": ["esbenp.prettier-vscode"]
+    "recommendations": ["streetsidesoftware.code-spell-checker", "esbenp.prettier-vscode", "dbaeumer.vscode-eslint"]
   }
 }

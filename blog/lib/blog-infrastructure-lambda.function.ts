@@ -1,14 +1,14 @@
 import 'source-map-support/register'
 
-import { Context, APIGatewayProxyResult, APIGatewayEvent } from 'aws-lambda'
 import { GetSecretValueCommand, SecretsManagerClient } from '@aws-sdk/client-secrets-manager'
-import { MikroORM } from '@mikro-orm/postgresql'
+import { MikroORM, SqlEntityManager } from '@mikro-orm/postgresql'
 import type { PostgreSqlDriver } from '@mikro-orm/postgresql'
 import { Book } from './entities/Book'
 import { getOrmConfig } from './orm-config'
-import { Pages } from './entities/Pages'
+import { ApolloServer } from '@apollo/server'
+import { startServerAndCreateLambdaHandler } from '@as-integrations/aws-lambda'
 
-export const handler = async (event: APIGatewayEvent, context: Context): Promise<APIGatewayProxyResult> => {
+const ormPromise = Promise.resolve().then(async () => {
   const secretsManagerClient = new SecretsManagerClient({ region: 'us-east-1' })
 
   const secretArn = process.env.DATABASE_SECRET_ARN
@@ -30,37 +30,56 @@ export const handler = async (event: APIGatewayEvent, context: Context): Promise
     port: parseInt(secretValues.port, 10),
   })
 
-  // Mikro
-  const orm = await MikroORM.init<PostgreSqlDriver>(ormConfig)
+  return MikroORM.init<PostgreSqlDriver>(ormConfig)
+})
 
-  const em = orm.em.fork()
-
-  const bookRepository = em.getRepository(Book)
-
-  const newBook = new Book()
-
-  newBook.title = 'New book title'
-
-  bookRepository.create(newBook)
-
-  await em.persistAndFlush(newBook)
-
-  const totalBooks = await bookRepository.count()
-
-  console.log('Total books', totalBooks)
-
-  const pagesRepository = em.getRepository(Pages)
-
-  const totalPages = await pagesRepository.count()
-
-  console.log('Total pages', totalBooks)
-
-  return {
-    statusCode: 200,
-    body: JSON.stringify({
-      totalBooks,
-      totalPages,
-      secretArn,
-    }),
+const typeDefs = `#graphql
+  type Book {
+    uuid: String
+    createdAt: String
+    updatedAt: String
+    title: String
   }
+
+  type Query {
+    hello: String
+
+    books: [Book]
+  }
+`
+
+type LambdaContext = {
+  em: SqlEntityManager<PostgreSqlDriver>
 }
+
+const resolvers = {
+  Query: {
+    hello: (root: any, args: any, context: LambdaContext) => {
+      return 'world'
+    },
+    books: (root: any, args: any, context: LambdaContext) => {
+      const bookRepository = context.em.getRepository(Book)
+
+      return bookRepository.findAll()
+    },
+  },
+}
+
+const server = new ApolloServer({
+  typeDefs,
+  resolvers,
+})
+
+export const handler = startServerAndCreateLambdaHandler(server, {
+  context: async ({ event, context }) => {
+    const orm = await ormPromise
+
+    const em = orm.em.fork()
+
+    return {
+      lambdaEvent: event,
+      lambdaContext: context,
+      em,
+    }
+  },
+})

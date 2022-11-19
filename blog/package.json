@@ -25,6 +25,8 @@
     "typescript": "^4.9.3"
   },
   "dependencies": {
+    "@apollo/server": "^4.1.1",
+    "@as-integrations/aws-lambda": "^1.0.1",
     "@aws-sdk/client-secrets-manager": "^3.204.0",
     "@mikro-orm/cli": "^5.5.3",
     "@mikro-orm/core": "^5.5.3",
@@ -33,6 +35,7 @@
     "@mikro-orm/reflection": "^5.5.3",
     "aws-cdk-lib": "2.50.0",
     "constructs": "^10.0.0",
+    "graphql": "^16.6.0",
     "pg": "^8.8.0",
     "source-map-support": "^0.5.21"
   },
