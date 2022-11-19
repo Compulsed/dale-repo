@@ -6,6 +6,9 @@ import { Architecture, Runtime } from 'aws-cdk-lib/aws-lambda'
 import { SubnetType, Vpc } from 'aws-cdk-lib/aws-ec2'
 import * as secretsManager from 'aws-cdk-lib/aws-secretsmanager'
 import { Duration } from 'aws-cdk-lib'
+import { getEnvironment } from './utils/get-environment'
+
+const { STAGE } = getEnvironment(['STAGE'])
 
 export class BlogInfrastructure extends cdk.Stack {
   constructor(scope: Construct, id: string, props?: cdk.StackProps) {
@@ -17,7 +20,6 @@ export class BlogInfrastructure extends cdk.Stack {
       vpcName: 'DatabaseInfrastructure/Vpc',
     })
 
-    // TODO: Import secret from stack outputs
     const secret = secretsManager.Secret.fromSecretCompleteArn(this, 'Secret', importedSecretArn)
 
     const apiFunction = new NodejsFunction(this, 'ApiFunction', {
@@ -26,10 +28,11 @@ export class BlogInfrastructure extends cdk.Stack {
       timeout: Duration.seconds(30),
       entry: __dirname + '/blog-infrastructure-lambda.function.ts',
       environment: {
-        databaseSecretArn: secret.secretFullArn ?? '',
+        STAGE,
+        DATABASE_SECRET_ARN: secret.secretFullArn ?? '',
       },
       bundling: {
-        preCompilation: true,
+        preCompilation: true, // Runs TSC before deploying
 
         externalModules: [
           // pg imports
