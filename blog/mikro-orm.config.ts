@@ -1,4 +1,5 @@
 import { Options } from '@mikro-orm/core'
+import { Book } from './lib/entities/Book'
 
 export default new Promise((resolve) => {
   const config: Options = {
@@ -19,9 +20,7 @@ export default new Promise((resolve) => {
       transactional: true,
     },
 
-    // TODO: These values might be incorrect
-    entities: ['./lib/entities'], // path to our JS entities (dist), relative to `baseDir` // TODO: Was dist/entities
-    entitiesTs: ['./lib/entities'], // path to our TS entities (src), relative to `baseDir`
+    entities: [Book],
   }
 
   resolve(config)

@@ -1,12 +1,10 @@
 import 'source-map-support/register'
-import 'reflect-metadata'
 
 import { Context, APIGatewayProxyResult, APIGatewayEvent } from 'aws-lambda'
 import { GetSecretValueCommand, SecretsManagerClient } from '@aws-sdk/client-secrets-manager'
 import { Client } from 'pg'
 import { MikroORM } from '@mikro-orm/postgresql'
-import { LoadStrategy } from '@mikro-orm/core'
-import type { PostgreSqlDriver } from '@mikro-orm/postgresql' // or any other driver package
+import type { PostgreSqlDriver } from '@mikro-orm/postgresql'
 import { Book } from './entities/Book'
 
 const secretsManagerClient = new SecretsManagerClient({ region: 'us-east-1' })
@@ -59,11 +57,6 @@ export const handler = async (event: APIGatewayEvent, context: Context): Promise
     },
 
     entities: [Book],
-    // entities: ['./lib/entities'], // path to our JS entities (dist), relative to `baseDir`
-    // entitiesTs: ['./lib/entities'], // path to our TS entities (src), relative to `baseDir`
-
-    loadStrategy: LoadStrategy.JOINED,
-    discovery: { warnWhenNoEntities: false },
   })
 
   console.log(orm.em)

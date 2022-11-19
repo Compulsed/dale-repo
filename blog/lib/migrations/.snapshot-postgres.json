@@ -8,12 +8,12 @@
       "columns": {
         "uuid": {
           "name": "uuid",
-          "type": "varchar(255)",
+          "type": "uuid",
           "unsigned": false,
           "autoincrement": false,
           "primary": false,
           "nullable": false,
-          "mappedType": "string"
+          "mappedType": "uuid"
         },
         "created_at": {
           "name": "created_at",
@@ -37,12 +37,12 @@
         },
         "title": {
           "name": "title",
-          "type": "varchar(255)",
+          "type": "text",
           "unsigned": false,
           "autoincrement": false,
           "primary": false,
           "nullable": false,
-          "mappedType": "string"
+          "mappedType": "text"
         }
       },
       "name": "book",

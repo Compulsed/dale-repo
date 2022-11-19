@@ -3,9 +3,9 @@ import { Construct } from 'constructs'
 import { NodejsFunction } from 'aws-cdk-lib/aws-lambda-nodejs'
 import { LambdaRestApi } from 'aws-cdk-lib/aws-apigateway'
 import { Architecture, Runtime } from 'aws-cdk-lib/aws-lambda'
-import { SecurityGroup, SubnetType, Vpc } from 'aws-cdk-lib/aws-ec2'
+import { SubnetType, Vpc } from 'aws-cdk-lib/aws-ec2'
 import * as secretsManager from 'aws-cdk-lib/aws-secretsmanager'
-import { Aspects, CfnOutput, Duration } from 'aws-cdk-lib'
+import { Duration } from 'aws-cdk-lib'
 
 export class BlogInfrastructure extends cdk.Stack {
   constructor(scope: Construct, id: string, props?: cdk.StackProps) {
@@ -29,6 +29,8 @@ export class BlogInfrastructure extends cdk.Stack {
         databaseSecretArn: secret.secretFullArn ?? '',
       },
       bundling: {
+        preCompilation: true,
+
         externalModules: [
           // pg imports
           'pg-native',
