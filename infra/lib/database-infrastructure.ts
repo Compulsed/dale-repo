@@ -59,6 +59,7 @@ export class DatabaseInfrastructure extends cdk.Stack {
         vpcSubnets: vpc.selectSubnets({
           subnetType: SubnetType.PRIVATE_ISOLATED,
         }),
+        enablePerformanceInsights: true,
       },
       port: 5432,
     })
