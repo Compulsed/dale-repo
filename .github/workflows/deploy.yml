@@ -43,10 +43,6 @@ jobs:
         working-directory: ./blog
         run: npx cdk deploy --require-approval never
 
-      - name: AWS S3 LS
-        working-directory: ./
-        run: aws s3 ls
-
       - name: Port forward
         working-directory: ./
         run: ./bin/port-forward
