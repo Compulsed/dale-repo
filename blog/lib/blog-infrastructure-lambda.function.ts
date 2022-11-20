@@ -1,6 +1,6 @@
 import 'source-map-support/register'
 
-import { sdk, sdkInit, tracer } from './otel'
+import { sdkInit, tracer } from './otel'
 
 // All other deps
 import _ from 'lodash'
@@ -78,10 +78,10 @@ type LambdaContext = {
 
 const resolvers = {
   Query: {
-    hello: (root: any, args: any, context: LambdaContext) => {
+    hello: (_: any, __: any, ___: LambdaContext) => {
       return 'world'
     },
-    books: async (root: any, args: any, context: LambdaContext) => {
+    books: async (_: any, __: any, context: LambdaContext) => {
       const bookRepository = context.em.getRepository(Book)
 
       const books = await tracer.startActiveSpan('find-books', async (span) => {

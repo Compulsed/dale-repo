@@ -24,7 +24,13 @@ diag.setLogger(new DiagConsoleLogger(), DiagLogLevel.WARN)
 // Must call await on this method, otherwise traces go missing
 export const sdkInit = sdk
   .start()
-  .then(() => console.log('Tracing initialized'))
-  .catch((error) => console.log('Error initializing tracing', error))
+  .then(() => {
+    // eslint-disable-next-line no-console
+    console.log('Tracing initialized')
+  })
+  .catch((error) => {
+    // eslint-disable-next-line no-console
+    console.log('Error initializing tracing', error)
+  })
 
 export const tracer = opentelemetry.trace.getTracer('my-service-tracer')
