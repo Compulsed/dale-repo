@@ -1,0 +1,23 @@
+# Docs - https://docs.honeycomb.io/getting-data-in/otel-collector/
+receivers:
+  otlp:
+    protocols:
+      grpc:
+      http:
+
+exporters:
+  otlp/traces:
+    endpoint: api.honeycomb.io:443
+    headers:
+      'x-honeycomb-team': Z31Br8msv6AdNMHJe8jHmC
+
+  logging:
+    loglevel: debug
+
+service:
+  extensions: []
+  pipelines:
+    traces:
+      receivers: [otlp]
+      processors: []
+      exporters: [otlp/traces]

@@ -18,6 +18,13 @@ https://github.com/mikro-orm/mikro-orm/discussions/2219
 - Requires node modules in ESBuild to auto-instrument particular packages
   - Increases cold starts if some packages are excluded (unsure how much)
   - Only includes manual instrumentation, fs, exception, & some HTTP if we bundle these deps
+- Unsure if `exporter-trace-otlp-proto` is needed as an explicit package
+
+Considerations:
+
+- Is the layer doing an auto-exporter?
+- Remove the honeycomb keys from environment variables, they could be causing conflicts
+- Do I need to point my OTelexporter at localhost?
 
 **TODO**
 

@@ -1,6 +1,6 @@
 import 'source-map-support/register'
 
-import { getOtelSdk } from './otel'
+import { sdk } from './otel'
 import opentelemetry from '@opentelemetry/api'
 
 // All other deps
@@ -17,6 +17,7 @@ import { Book } from './entities/Book'
 import { getOrmConfig } from './orm-config'
 import { getEnvironment } from './utils/get-environment'
 
+// This is typically done once per file
 const tracer = opentelemetry.trace.getTracer('my-service-tracer')
 
 const getOrm = _.memoize(async () => {
@@ -124,6 +125,13 @@ const serverHandler = startServerAndCreateLambdaHandler(server, {
   context: async ({ event, context }) => {
     const orm = await tracer.startActiveSpan('orm-setup', async (span) => {
       const orm = await getOrm()
+
+      // TODO: Add event, similar to logging
+      span.addEvent('some log', {
+        'log.severity': 'error',
+        'log.message': 'Data not found',
+      })
+
       span.end()
       return orm
     })
@@ -143,9 +151,7 @@ const serverHandler = startServerAndCreateLambdaHandler(server, {
       - ~2s pg-connect
       - ~1.3-1.7s OTel init, js module, apollo server, etc
 */
-export const handler = async (event: APIGatewayEvent, context: Context, cb: any): Promise<any> => {
-  await getOtelSdk()
-
+const handler = async (event: APIGatewayEvent, context: Context, cb: any): Promise<any> => {
   return tracer.startActiveSpan('handler', async (span) => {
     const response = await serverHandler(event, context, cb)
 
@@ -154,3 +160,5 @@ export const handler = async (event: APIGatewayEvent, context: Context, cb: any)
     return response
   })
 }
+
+module.exports = { handler }

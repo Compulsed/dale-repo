@@ -15,12 +15,13 @@ export const sdk = new NodeSDK({
       '@opentelemetry/instrumentation-fs': {
         enabled: false,
       },
+      '@opentelemetry/instrumentation-aws-lambda': {
+        enabled: false,
+      },
     }),
   ],
 })
 
 diag.setLogger(new DiagConsoleLogger(), DiagLogLevel.WARN)
 
-export const getOtelSdk = _.memoize(async () => {
-  return sdk.start()
-})
+sdk.start()
