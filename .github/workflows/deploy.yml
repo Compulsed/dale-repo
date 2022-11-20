@@ -43,14 +43,18 @@ jobs:
         working-directory: ./blog
         run: npx cdk deploy --require-approval never
 
+      - name: AWS S3 LS
+        working-directory: ./
+        run: aws s3 ls
+
       - name: Port forward
         working-directory: ./
         run: ./bin/port-forward
 
       - name: Create DB if it does not exist
-        working-directory: ./
+        working-directory: ./blog
         run: npx mikro-orm database:create
 
       - name: Up Script
-        working-directory: ./
+        working-directory: ./blog
         run: npx mikro-orm migration:up
