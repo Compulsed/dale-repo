@@ -39,14 +39,6 @@ jobs:
         working-directory: ./blog
         run: npm ci
 
-      - name: CDK Deploy
-        working-directory: ./blog
-        run: npx cdk deploy --require-approval never
-
-      - name: Port forward
-        working-directory: ./
-        run: ./bin/port-forward
-
       - name: Create DB if it does not exist
         working-directory: ./blog
         run: npx mikro-orm database:create
@@ -54,3 +46,11 @@ jobs:
       - name: Up Script
         working-directory: ./blog
         run: npx mikro-orm migration:up
+
+      - name: CDK Deploy
+        working-directory: ./blog
+        run: npx cdk deploy --require-approval never
+
+      - name: Port forward
+        working-directory: ./
+        run: ./bin/port-forward
