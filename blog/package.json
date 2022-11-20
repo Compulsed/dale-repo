@@ -8,7 +8,9 @@
     "build": "tsc",
     "watch": "tsc -w",
     "test": "jest",
-    "cdk": "cdk"
+    "cdk": "cdk",
+    "format": "prettier ./lib --write",
+    "format-check": "prettier ./lib -c"
   },
   "devDependencies": {
     "@types/aws-lambda": "^8.10.108",
