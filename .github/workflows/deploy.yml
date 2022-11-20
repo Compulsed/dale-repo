@@ -1,0 +1,42 @@
+name: Deploy
+
+concurrency: prod-deploy
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  release-production:
+    runs-on: ubuntu-latest
+    env:
+      DATABASE_SECRET_ARN: DbClusterSecret9A4B0D5E-u27xQsOk1a4V
+      STAGE: prod
+      OTEL_SERVICE_NAME: dale-blog-prod
+      OTEL_EXPORTER_OTLP_ENDPOINT: https://api.honeycomb.io
+      OTEL_EXPORTER_OTLP_HEADERS: x-honeycomb-team=${{ secrets.HONEYCOMB_API_KEY }}
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v3
+
+      - uses: actions/setup-node@v2
+        with:
+          node-version: '16'
+
+      - name: Configure AWS Credentials for Connector Account
+        uses: aws-actions/configure-aws-credentials@master
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: 'us-east-1'
+
+      - name: CDK Deploy
+        working-directory: ./blog
+        run: npx cdk deploy
+
+      # Database migration -- via port-forward / cli ssm manager
