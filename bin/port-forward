@@ -27,8 +27,14 @@ echo "-> Database secret arn: ${DATABASE_SECRET_ARN}"
 echo "-> Database host name: ${DATABASE_HOST}"
 echo "-> Database password: ${DATABASE_PASSWORD}"
 
-aws \
+nohup aws \
   ssm start-session \
   --document-name AWS-StartPortForwardingSessionToRemoteHost \
   --parameters "{\"host\":[\"databaseinfrastructure-dbcluster224236ef-3mbxyryd0ipg.cluster-cp1pjbcco8nm.us-east-1.rds.amazonaws.com\"],\"portNumber\":[\"5432\"], \"localPortNumber\":[\"5432\"]}" \
-  --target "${BASTION_INSTANCE_ID}"
+  --target "${BASTION_INSTANCE_ID}" > /dev/null 2>&1 &
+
+echo "Sleeping to let connection set up"
+
+sleep 10; # Going async we need to give the connection a couple of seconds to set up
+
+echo "Finished, connection ready"
