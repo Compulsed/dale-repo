@@ -41,6 +41,6 @@ jobs:
 
       - name: CDK Deploy
         working-directory: ./blog
-        run: npx cdk deploy
+        run: npx cdk deploy --require-approval never
 
       # Database migration -- via port-forward / cli ssm manager
