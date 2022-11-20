@@ -1,24 +1,37 @@
 import 'source-map-support/register'
 
+import { sdkInit, tracer } from './otel'
+
+// All other deps
+import _ from 'lodash'
+import { APIGatewayEvent, Context } from 'aws-lambda'
 import { GetSecretValueCommand, SecretsManagerClient } from '@aws-sdk/client-secrets-manager'
 import { MikroORM, SqlEntityManager } from '@mikro-orm/postgresql'
 import type { PostgreSqlDriver } from '@mikro-orm/postgresql'
-import { Book } from './entities/Book'
-import { getOrmConfig } from './orm-config'
 import { ApolloServer } from '@apollo/server'
 import { startServerAndCreateLambdaHandler } from '@as-integrations/aws-lambda'
+
+// Custom imports
+import { Book } from './entities/Book'
+import { getOrmConfig } from './orm-config'
 import { getEnvironment } from './utils/get-environment'
 
-const ormPromise = Promise.resolve().then(async () => {
-  const secretsManagerClient = new SecretsManagerClient({ region: 'us-east-1' })
+const getOrm = _.memoize(async () => {
+  const secret = await tracer.startActiveSpan('get-secret', async (span) => {
+    const secretsManagerClient = new SecretsManagerClient({ region: 'us-east-1' })
 
-  const { DATABASE_SECRET_ARN } = getEnvironment(['DATABASE_SECRET_ARN'])
+    const { DATABASE_SECRET_ARN } = getEnvironment(['DATABASE_SECRET_ARN'])
 
-  const command = new GetSecretValueCommand({
-    SecretId: DATABASE_SECRET_ARN,
+    const command = new GetSecretValueCommand({
+      SecretId: DATABASE_SECRET_ARN,
+    })
+
+    const secret = await secretsManagerClient.send(command)
+
+    span.end()
+
+    return secret
   })
-
-  const secret = await secretsManagerClient.send(command)
 
   const secretValues = JSON.parse(secret.SecretString ?? '{}')
 
@@ -31,7 +44,14 @@ const ormPromise = Promise.resolve().then(async () => {
     port: parseInt(secretValues.port, 10),
   })
 
-  return MikroORM.init<PostgreSqlDriver>(ormConfig)
+  // 600ms - 2s to initialize on cold-start due to pg-connect
+  const orm = await tracer.startActiveSpan('orm-init', async (span) => {
+    const orm = await MikroORM.init<PostgreSqlDriver>(ormConfig)
+    span.end()
+    return orm
+  })
+
+  return orm
 })
 
 const typeDefs = `#graphql
@@ -58,13 +78,19 @@ type LambdaContext = {
 
 const resolvers = {
   Query: {
-    hello: (root: any, args: any, context: LambdaContext) => {
+    hello: (_: any, __: any, ___: LambdaContext) => {
       return 'world'
     },
-    books: (root: any, args: any, context: LambdaContext) => {
+    books: async (_: any, __: any, context: LambdaContext) => {
       const bookRepository = context.em.getRepository(Book)
 
-      return bookRepository.findAll()
+      const books = await tracer.startActiveSpan('find-books', async (span) => {
+        const books = await bookRepository.findAll()
+        span.end()
+        return books
+      })
+
+      return books
     },
   },
   Mutation: {
@@ -89,9 +115,15 @@ const server = new ApolloServer({
   resolvers,
 })
 
-export const handler = startServerAndCreateLambdaHandler(server, {
+// TODO: Consider putting this inside the handler & caching for otel insights
+//  or use a `inject` to ensure the otel SDK is loaded before this file
+const serverHandler = startServerAndCreateLambdaHandler(server, {
   context: async ({ event, context }) => {
-    const orm = await ormPromise
+    const orm = await tracer.startActiveSpan('orm-setup', async (span) => {
+      const orm = await getOrm()
+      span.end()
+      return orm
+    })
 
     const em = orm.em.fork()
 
@@ -102,3 +134,22 @@ export const handler = startServerAndCreateLambdaHandler(server, {
     }
   },
 })
+
+/* Performance:
+    p50 ~3.3 - 3.7s
+      - ~2s pg-connect
+      - ~1.3-1.7s OTel init, js module, apollo server, etc
+*/
+export const handler = async (event: APIGatewayEvent, context: Context, cb: any): Promise<any> => {
+  await sdkInit
+
+  const response = await tracer.startActiveSpan('handler', async (span) => {
+    const response = await serverHandler(event, context, cb)
+
+    span.end()
+
+    return response
+  })
+
+  return response
+}

@@ -16,5 +16,8 @@ import { handler } from './blog-infrastructure-lambda.function'
 
   const response = await handler(event, context, cb)
 
+  // eslint-disable-next-line no-console
   console.log(response)
+
+  // process.exit(0)
 })()

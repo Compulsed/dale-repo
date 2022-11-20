@@ -1,0 +1,59 @@
+--- With init to PG
+
+'graphql',
+'pg',
+'@aws-sdk/client-secrets-manager',
+
+50% 3600
+66% 3989
+75% 4303
+80% 4412
+90% 4798
+95% 4992
+98% 5109
+99% 5109
+100% 5109 (longest request)
+
+// 'graphql'
+// 'pg',
+// '@aws-sdk/client-secrets-manager',
+50% 2559
+66% 2655
+75% 2656
+80% 2659
+90% 2695
+95% 2713
+98% 5221
+99% 5221
+100% 5221 (longest request)
+
+P50 3600 vs. 2559. So ~= 1 second quicker
+
+--- Without init to PG
+
+'graphql',
+'pg',
+'@aws-sdk/client-secrets-manager',
+50% 2632
+66% 2634
+75% 2636
+80% 2650
+90% 2701
+95% 2718
+98% 2774
+99% 2774
+100% 2774 (longest request)
+
+// 'graphql',
+// 'pg',
+// '@aws-sdk/client-secrets-manager',
+
+50% 1953
+66% 2082
+75% 2120
+80% 2139
+90% 2182
+95% 2198
+98% 2266
+99% 2266
+100% 2266 (longest request)

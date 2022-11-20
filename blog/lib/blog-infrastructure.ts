@@ -8,7 +8,12 @@ import * as secretsManager from 'aws-cdk-lib/aws-secretsmanager'
 import { Duration } from 'aws-cdk-lib'
 import { getEnvironment } from './utils/get-environment'
 
-const { STAGE } = getEnvironment(['STAGE'])
+const { STAGE, OTEL_EXPORTER_OTLP_ENDPOINT, OTEL_EXPORTER_OTLP_HEADERS, OTEL_SERVICE_NAME } = getEnvironment([
+  'STAGE',
+  'OTEL_EXPORTER_OTLP_ENDPOINT',
+  'OTEL_EXPORTER_OTLP_HEADERS',
+  'OTEL_SERVICE_NAME',
+])
 
 export class BlogInfrastructure extends cdk.Stack {
   constructor(scope: Construct, id: string, props?: cdk.StackProps) {
@@ -25,14 +30,33 @@ export class BlogInfrastructure extends cdk.Stack {
     const apiFunction = new NodejsFunction(this, 'ApiFunction', {
       runtime: Runtime.NODEJS_16_X,
       architecture: Architecture.ARM_64,
+      memorySize: 1024,
       timeout: Duration.seconds(30),
       entry: __dirname + '/blog-infrastructure-lambda.function.ts',
       environment: {
         STAGE,
+        OTEL_EXPORTER_OTLP_ENDPOINT,
+        OTEL_EXPORTER_OTLP_HEADERS,
+        OTEL_SERVICE_NAME,
         DATABASE_SECRET_ARN: secret.secretFullArn ?? '',
       },
       bundling: {
         preCompilation: true, // Runs TSC before deploying
+
+        nodeModules: [
+          // Required for 2 reasons
+          //  - Fixes an issue with '@opentelemetry/sdk-node' -> thriftrw -> bufrw throwing an error on function initialization
+          //  - OTEL does not work if `sdk-node` and `auto-instrumentations-node` are not included
+          '@opentelemetry/api',
+          '@opentelemetry/sdk-node',
+          '@opentelemetry/auto-instrumentations-node',
+
+          // Requires these to be installed as node_modules otherwise
+          //  auto-instrumentation does not work. Impacts of including = ~700ms - 1s to cold start
+          'graphql',
+          'pg',
+          '@aws-sdk/client-secrets-manager',
+        ],
 
         externalModules: [
           // pg imports
@@ -66,6 +90,9 @@ export class BlogInfrastructure extends cdk.Stack {
 
     new LambdaRestApi(this, 'ApiGateway', {
       handler: apiFunction,
+      deployOptions: {
+        stageName: 'graphql',
+      },
     })
   }
 }

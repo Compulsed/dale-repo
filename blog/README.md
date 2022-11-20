@@ -1,11 +1,5 @@
 # Dale Blog
 
-The following is what I had to do to get ESBuild (Which CDK uses) with MikroOrm
-
-https://mikro-orm.io/docs/deployment/#deploy-a-bundle-of-entities-and-dependencies-with-webpack
-
-https://github.com/mikro-orm/mikro-orm/discussions/2219
-
 **Setting up a new environment**
 
 - `port-forward`
@@ -13,9 +7,25 @@ https://github.com/mikro-orm/mikro-orm/discussions/2219
 - `npx mikro-orm migration:up`
 - `npx cdk deploy`
 
-**Running locally**
+**Mikro Orm Notes**
 
-- `LOCAL_INVOKE=y npx ts-node ./lib/invoker.ts`
+The following is what I had to do to get ESBuild (Which CDK uses) with MikroOrm
+
+https://mikro-orm.io/docs/deployment/#deploy-a-bundle-of-entities-and-dependencies-with-webpack
+
+https://github.com/mikro-orm/mikro-orm/discussions/2219
+
+**OTel Notes**
+
+- Requires node modules in ESBuild to auto-instrument particular packages
+  - Increases cold starts if some packages are excluded (unsure how much)
+  - Only includes manual instrumentation, fs, exception, & some HTTP if we bundle these deps
+- Lambda does not flush all traces, need to use a lambda extension
+  - Issue with the lambda extension are they do not work with manual
+    instrumentation (unsure how to access OTEL libraries provided by the layer)
+  - [aws-otel-lambda](https://github.com/aws-observability/aws-otel-lambda) appears to be wanky due to missing XRay traces (not in HNY) / ESBuild (maybe the new telemtry API will help with this)
+  - [opentelemetry-lambda](https://github.com/open-telemetry/opentelemetry-lambda/), have not tried. Requires building custom layer
+  - Honeycomb-opentelemetry-node - is coming
 
 **TODO**
 
@@ -24,11 +34,12 @@ Setup:
 - ✅ Improvements, support different database names
 - ✅ Mikro cli fetches secret
 - ✅ Support different stack deployments
-- Local express support
-- GraphQL connections
-- Custom domain name
-- GraphQL URL path
+- ✅ GraphQL connections
+- ✅ GraphQL URL path
+- ⚠️ OTel exports are not missed
 - CI/CD Pipeline
+- Custom domain name
+- Local express support
 
 Replicating:
 
