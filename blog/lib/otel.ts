@@ -21,6 +21,10 @@ export const sdk = new NodeSDK({
 
 diag.setLogger(new DiagConsoleLogger(), DiagLogLevel.WARN)
 
-export const getOtelSdk = _.memoize(async () => {
-  return sdk.start()
-})
+// Must call await on this method, otherwise traces go missing
+export const sdkInit = sdk
+  .start()
+  .then(() => console.log('Tracing initialized'))
+  .catch((error) => console.log('Error initializing tracing', error))
+
+export const tracer = opentelemetry.trace.getTracer('my-service-tracer')

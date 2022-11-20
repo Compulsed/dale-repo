@@ -18,6 +18,12 @@ https://github.com/mikro-orm/mikro-orm/discussions/2219
 - Requires node modules in ESBuild to auto-instrument particular packages
   - Increases cold starts if some packages are excluded (unsure how much)
   - Only includes manual instrumentation, fs, exception, & some HTTP if we bundle these deps
+- Lambda does not flush all traces, need to use a lambda extension
+  - Issue with the lambda extension are they do not work with manual
+    instrumentation (unsure how to access OTEL libraries provided by the layer)
+  - [aws-otel-lambda](https://github.com/aws-observability/aws-otel-lambda) appears to be wanky due to missing XRay traces (not in HNY) / ESBuild (maybe the new telemtry API will help with this)
+  - [opentelemetry-lambda](https://github.com/open-telemetry/opentelemetry-lambda/), have not tried. Requires building custom layer
+  - Honeycomb-opentelemetry-node - is coming
 
 **TODO**
 
@@ -27,7 +33,7 @@ Setup:
 - ✅ Mikro cli fetches secret
 - ✅ Support different stack deployments
 - ✅ GraphQL connections
-- OTel exports are not missed
+- ⚠️ OTel exports are not missed
 - Local express support
 - Custom domain name
 - GraphQL URL path

@@ -1,7 +1,6 @@
 import 'source-map-support/register'
 
-import { getOtelSdk } from './otel'
-import opentelemetry from '@opentelemetry/api'
+import { sdk, sdkInit, tracer } from './otel'
 
 // All other deps
 import _ from 'lodash'
@@ -16,8 +15,6 @@ import { startServerAndCreateLambdaHandler } from '@as-integrations/aws-lambda'
 import { Book } from './entities/Book'
 import { getOrmConfig } from './orm-config'
 import { getEnvironment } from './utils/get-environment'
-
-const tracer = opentelemetry.trace.getTracer('my-service-tracer')
 
 const getOrm = _.memoize(async () => {
   const secret = await tracer.startActiveSpan('get-secret', async (span) => {
@@ -144,13 +141,15 @@ const serverHandler = startServerAndCreateLambdaHandler(server, {
       - ~1.3-1.7s OTel init, js module, apollo server, etc
 */
 export const handler = async (event: APIGatewayEvent, context: Context, cb: any): Promise<any> => {
-  await getOtelSdk()
+  await sdkInit
 
-  return tracer.startActiveSpan('handler', async (span) => {
+  const response = await tracer.startActiveSpan('handler', async (span) => {
     const response = await serverHandler(event, context, cb)
 
     span.end()
 
     return response
   })
+
+  return response
 }
