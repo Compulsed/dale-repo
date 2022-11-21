@@ -7,7 +7,7 @@ import { handler } from './blog-infrastructure-lambda.function'
       'content-type': 'application/json',
     },
     requestContext: {},
-    body: '{"operationName": null, "variables": null, "query": "{ books { title } }"}',
+    body: '{"operationName": null, "variables": null, "query": "{ posts { id } }"}',
   }
 
   const context: any = {}

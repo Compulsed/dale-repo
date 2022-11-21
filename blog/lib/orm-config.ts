@@ -1,7 +1,5 @@
 import { getEnvironment } from './utils/get-environment'
-
-import { Book } from './entities/Book'
-import { Pages } from './entities/Pages'
+import { Post } from './entities/Post'
 
 const { STAGE } = getEnvironment(['STAGE'])
 
@@ -19,7 +17,7 @@ export const getOrmConfig = (config: any) => {
       transactional: true,
     },
 
-    entities: [Book, Pages],
+    entities: [Post],
   }
 
   return { ...config, ...sharedConfig }
