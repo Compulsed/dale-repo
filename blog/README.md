@@ -38,7 +38,7 @@ Setup:
 - ✅ GraphQL URL path
 - ⚠️ OTel exports are not missed
 - ✅ CI/CD Pipeline
-- Custom domain name
+- ✅ Custom domain name
 - Local express support
 
 Replicating:

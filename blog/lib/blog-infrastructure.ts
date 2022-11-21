@@ -22,6 +22,8 @@ export class BlogInfrastructure extends cdk.Stack {
   constructor(scope: Construct, id: string, props?: cdk.StackProps) {
     super(scope, id, props)
 
+    // TODO: Import from Infra stack
+    const hostedZoneId = 'Z05982951JTEV3EHAO42B'
     const rootName = 'api-blog.dalejsalter.com'
     const recordName = STAGE
     const domainName = `${recordName}.${rootName}`
@@ -36,7 +38,7 @@ export class BlogInfrastructure extends cdk.Stack {
     const secret = secretsManager.Secret.fromSecretCompleteArn(this, 'Secret', importedSecretArn)
 
     const zone = PublicHostedZone.fromHostedZoneAttributes(this, 'HostedZone', {
-      hostedZoneId: 'Z05982951JTEV3EHAO42B', // TODO: Import from Infra stack
+      hostedZoneId,
       zoneName: rootName,
     })
 
