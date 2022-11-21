@@ -1,11 +1,13 @@
 {
-  "namespaces": ["public"],
+  "namespaces": [
+    "public"
+  ],
   "name": "public",
   "tables": [
     {
       "columns": {
-        "uuid": {
-          "name": "uuid",
+        "id": {
+          "name": "id",
           "type": "uuid",
           "unsigned": false,
           "autoincrement": false,
@@ -33,60 +35,14 @@
           "length": 6,
           "mappedType": "datetime"
         },
-        "title": {
-          "name": "title",
+        "post_id": {
+          "name": "post_id",
           "type": "text",
           "unsigned": false,
           "autoincrement": false,
           "primary": false,
           "nullable": false,
           "mappedType": "text"
-        }
-      },
-      "name": "book",
-      "schema": "public",
-      "indexes": [
-        {
-          "keyName": "book_pkey",
-          "columnNames": ["uuid"],
-          "composite": false,
-          "primary": true,
-          "unique": true
-        }
-      ],
-      "checks": [],
-      "foreignKeys": {}
-    },
-    {
-      "columns": {
-        "uuid": {
-          "name": "uuid",
-          "type": "uuid",
-          "unsigned": false,
-          "autoincrement": false,
-          "primary": false,
-          "nullable": false,
-          "mappedType": "uuid"
-        },
-        "created_at": {
-          "name": "created_at",
-          "type": "timestamptz(0)",
-          "unsigned": false,
-          "autoincrement": false,
-          "primary": false,
-          "nullable": false,
-          "length": 6,
-          "mappedType": "datetime"
-        },
-        "updated_at": {
-          "name": "updated_at",
-          "type": "timestamptz(0)",
-          "unsigned": false,
-          "autoincrement": false,
-          "primary": false,
-          "nullable": false,
-          "length": 6,
-          "mappedType": "datetime"
         },
         "title": {
           "name": "title",
@@ -96,14 +52,70 @@
           "primary": false,
           "nullable": false,
           "mappedType": "text"
+        },
+        "body": {
+          "name": "body",
+          "type": "text",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "mappedType": "text"
+        },
+        "short_description": {
+          "name": "short_description",
+          "type": "text",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "mappedType": "text"
+        },
+        "long_description": {
+          "name": "long_description",
+          "type": "text",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "mappedType": "text"
+        },
+        "image_url": {
+          "name": "image_url",
+          "type": "text",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "mappedType": "text"
+        },
+        "publish_status": {
+          "name": "publish_status",
+          "type": "text",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "mappedType": "text"
+        },
+        "available_with_link": {
+          "name": "available_with_link",
+          "type": "boolean",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "mappedType": "boolean"
         }
       },
-      "name": "pages",
+      "name": "post",
       "schema": "public",
       "indexes": [
         {
-          "keyName": "pages_pkey",
-          "columnNames": ["uuid"],
+          "keyName": "post_pkey",
+          "columnNames": [
+            "id"
+          ],
           "composite": false,
           "primary": true,
           "unique": true

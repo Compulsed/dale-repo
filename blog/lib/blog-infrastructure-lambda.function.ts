@@ -55,20 +55,52 @@ const getOrm = _.memoize(async () => {
 })
 
 const typeDefs = `#graphql
-  type Book {
-    uuid: String
+  type Post {
+    id: ID!
+    postId: String
+    title: String
+    body: String
+    shortDescription: String
+    longDescription: String
+    imageUrl: String
     createdAt: String
     updatedAt: String
-    title: String
+    publishStatus: String
+    availableWithLink: Boolean
   }
 
   type Query {
-    hello: String
-    books: [Book]
+    hello: String!
+    post(postId: String!): Post
+    posts: [Post]
+    editorPost(postId: String!, secret: String!): Post
+    editorPosts(secret: String!): [Post]
+    editorSignedUrl(fileName: String!, secret: String!, contentType: String!): String
+  }
+
+  input PostInput {
+    postId: String!
+    title: String
+    body: String
+    shortDescription: String
+    longDescription: String
+    imageUrl: String
+  }
+  
+  type UpdatePostResponse {
+    status: Boolean!
+    errorMessage: String
+    post: Post
   }
 
   type Mutation {
-    createBook: Book
+    createPost (postInput: PostInput!, secret: String!): UpdatePostResponse!
+    updatePost (postInput: PostInput!, secret: String!): UpdatePostResponse!
+    publishPost (postId: String!, secret: String!): UpdatePostResponse!
+    hidePost (postId: String!, secret: String!): UpdatePostResponse!
+    unhidePost (postId: String!, secret: String!): UpdatePostResponse!
+    setAvailableWithLink (postId: String!, secret: String!): UpdatePostResponse!
+    removeAvailableWithLink (postId: String!, secret: String!): UpdatePostResponse!
   }
 `
 
