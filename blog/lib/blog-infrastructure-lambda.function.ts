@@ -15,6 +15,7 @@ import { startServerAndCreateLambdaHandler } from '@as-integrations/aws-lambda'
 import { Post } from './entities/Post'
 import { getOrmConfig } from './orm-config'
 import { getEnvironment } from './utils/get-environment'
+import { QueryOrder } from '@mikro-orm/core'
 
 const getOrm = _.memoize(async () => {
   const secret = await tracer.startActiveSpan('get-secret', async (span) => {
@@ -55,6 +56,11 @@ const getOrm = _.memoize(async () => {
 })
 
 const typeDefs = `#graphql
+  enum PublishStatus {
+    PUBLISHED
+    HIDDEN
+  }
+
   type Post {
     id: ID!
     postId: String
@@ -65,7 +71,7 @@ const typeDefs = `#graphql
     imageUrl: String
     createdAt: String
     updatedAt: String
-    publishStatus: String
+    publishStatus: PublishStatus
     availableWithLink: Boolean
   }
 
@@ -128,22 +134,79 @@ type UpdatePostResponse = {
   post: Post | null
 }
 
+enum PublishStatus {
+  Published = 'PUBLISHED',
+  Hidden = 'HIDDEN',
+}
+
 const resolvers = {
   Query: {
     hello: (_: any, __: any, ___: LambdaContext) => {
       return 'world'
     },
-    posts: (_: any, __: any, context: LambdaContext) => {
+
+    post: (_: any, { postId }: { postId: string }, context: LambdaContext): Promise<Post> => {
       const postRepository = context.em.getRepository(Post)
 
-      return postRepository.findAll()
+      // TODO: Consider 404 handling
+      return postRepository.findOneOrFail({
+        postId: postId,
+        availableWithLink: true,
+        publishStatus: PublishStatus.Published,
+      })
+    },
+
+    posts: (_: any, __: any, context: LambdaContext): Promise<Post[]> => {
+      const postRepository = context.em.getRepository(Post)
+
+      return postRepository.find(
+        {
+          publishStatus: PublishStatus.Published,
+        },
+        { orderBy: { createdAt: QueryOrder.DESC } }
+      )
+    },
+
+    editorPost: (_: any, { postId }: { postId: string }, context: LambdaContext): Promise<Post> => {
+      const postRepository = context.em.getRepository(Post)
+
+      // TODO: Consider 404 handling
+      return postRepository.findOneOrFail({
+        postId: postId,
+        availableWithLink: true,
+      })
+    },
+
+    editorPosts: (_: any, __: any, context: LambdaContext): Promise<Post[]> => {
+      const postRepository = context.em.getRepository(Post)
+
+      return postRepository.find({}, { orderBy: { createdAt: QueryOrder.DESC } })
     },
   },
+
   Mutation: {
     createPost: async (_: any, args: PostArgs, context: LambdaContext): Promise<UpdatePostResponse> => {
       const postRepository = context.em.getRepository(Post)
 
       const post = postRepository.create(new Post(args.postInput))
+
+      await postRepository.persistAndFlush(post)
+
+      return {
+        status: true,
+        errorMessage: null,
+        post: post,
+      }
+    },
+
+    publishPost: async (_: any, { postId }: { postId: string }, context: LambdaContext) => {
+      const postRepository = context.em.getRepository(Post)
+
+      const post = await postRepository.findOneOrFail({
+        postId: postId,
+      })
+
+      post.publishStatus = PublishStatus.Published
 
       await postRepository.persistAndFlush(post)
 

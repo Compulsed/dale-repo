@@ -8,6 +8,7 @@ export class Post extends CustomBaseEntity {
     Object.assign(this, data)
   }
 
+  // TODO: Index on this
   @Property({ type: 'text', nullable: true })
   postId: string
 
