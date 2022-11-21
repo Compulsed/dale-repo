@@ -12,7 +12,7 @@ import { ApolloServer } from '@apollo/server'
 import { startServerAndCreateLambdaHandler } from '@as-integrations/aws-lambda'
 
 // Custom imports
-import { Book } from './entities/Book'
+import { Post } from './entities/Post'
 import { getOrmConfig } from './orm-config'
 import { getEnvironment } from './utils/get-environment'
 
@@ -108,36 +108,50 @@ type LambdaContext = {
   em: SqlEntityManager<PostgreSqlDriver>
 }
 
+type PostArgs = {
+  postInput: PostInput
+  secret: string
+}
+
+type PostInput = Partial<{
+  postId: string
+  title: string
+  body: string
+  shortDescription: string
+  longDescription: string
+  imageUrl: string
+}>
+
+type UpdatePostResponse = {
+  status: boolean
+  errorMessage: string | null
+  post: Post | null
+}
+
 const resolvers = {
   Query: {
     hello: (_: any, __: any, ___: LambdaContext) => {
       return 'world'
     },
-    books: async (_: any, __: any, context: LambdaContext) => {
-      const bookRepository = context.em.getRepository(Book)
+    posts: (_: any, __: any, context: LambdaContext) => {
+      const postRepository = context.em.getRepository(Post)
 
-      const books = await tracer.startActiveSpan('find-books', async (span) => {
-        const books = await bookRepository.findAll()
-        span.end()
-        return books
-      })
-
-      return books
+      return postRepository.findAll()
     },
   },
   Mutation: {
-    createBook: async (root: any, args: any, context: LambdaContext) => {
-      const bookRepository = context.em.getRepository(Book)
+    createPost: async (_: any, args: PostArgs, context: LambdaContext): Promise<UpdatePostResponse> => {
+      const postRepository = context.em.getRepository(Post)
 
-      const book = new Book()
+      const post = postRepository.create(new Post(args.postInput))
 
-      bookRepository.create(book)
+      await postRepository.persistAndFlush(post)
 
-      book.title = 'Custom title from API'
-
-      await bookRepository.persistAndFlush(book)
-
-      return book
+      return {
+        status: true,
+        errorMessage: null,
+        post: post,
+      }
     },
   },
 }
