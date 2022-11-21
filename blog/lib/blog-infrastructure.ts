@@ -4,9 +4,12 @@ import { NodejsFunction } from 'aws-cdk-lib/aws-lambda-nodejs'
 import { LambdaRestApi } from 'aws-cdk-lib/aws-apigateway'
 import { Architecture, Runtime } from 'aws-cdk-lib/aws-lambda'
 import { SubnetType, Vpc } from 'aws-cdk-lib/aws-ec2'
+import { ARecord, PublicHostedZone, RecordTarget } from 'aws-cdk-lib/aws-route53'
 import * as secretsManager from 'aws-cdk-lib/aws-secretsmanager'
 import { Duration } from 'aws-cdk-lib'
 import { getEnvironment } from './utils/get-environment'
+import { Certificate, CertificateValidation } from 'aws-cdk-lib/aws-certificatemanager'
+import { ApiGateway } from 'aws-cdk-lib/aws-route53-targets'
 
 const { STAGE, OTEL_EXPORTER_OTLP_ENDPOINT, OTEL_EXPORTER_OTLP_HEADERS, OTEL_SERVICE_NAME } = getEnvironment([
   'STAGE',
@@ -19,13 +22,28 @@ export class BlogInfrastructure extends cdk.Stack {
   constructor(scope: Construct, id: string, props?: cdk.StackProps) {
     super(scope, id, props)
 
+    const rootName = 'api-blog.dalejsalter.com'
+    const recordName = STAGE
+    const domainName = `${recordName}.${rootName}`
+
     const importedSecretArn = cdk.Fn.importValue('DatabaseSecretArn')
 
+    // TODO: Import from Infra stack?
     const vpc = Vpc.fromLookup(this, 'Vpc', {
       vpcName: 'DatabaseInfrastructure/Vpc',
     })
 
     const secret = secretsManager.Secret.fromSecretCompleteArn(this, 'Secret', importedSecretArn)
+
+    const zone = PublicHostedZone.fromHostedZoneAttributes(this, 'HostedZone', {
+      hostedZoneId: 'Z05982951JTEV3EHAO42B', // TODO: Import from Infra stack
+      zoneName: rootName,
+    })
+
+    const certificate = new Certificate(this, 'Certificate', {
+      domainName,
+      validation: CertificateValidation.fromDns(zone),
+    })
 
     const apiFunction = new NodejsFunction(this, 'ApiFunction', {
       runtime: Runtime.NODEJS_16_X,
@@ -88,11 +106,21 @@ export class BlogInfrastructure extends cdk.Stack {
 
     secret?.grantRead(apiFunction)
 
-    new LambdaRestApi(this, 'ApiGateway', {
+    const api = new LambdaRestApi(this, 'ApiGateway', {
       handler: apiFunction,
       deployOptions: {
         stageName: 'graphql',
       },
+      domainName: {
+        certificate,
+        domainName,
+      },
+    })
+
+    new ARecord(this, 'APIGatewayRecord', {
+      zone: zone,
+      target: RecordTarget.fromAlias(new ApiGateway(api)),
+      recordName: recordName,
     })
   }
 }
