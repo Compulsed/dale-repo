@@ -53,15 +53,18 @@ export class BlogInfrastructure extends cdk.Stack {
       memorySize: 1024,
       timeout: Duration.seconds(30),
       entry: __dirname + '/blog-infrastructure-lambda.function.ts',
-      tracing: Tracing.ACTIVE,
+      tracing: Tracing.PASS_THROUGH,
       environment: {
         STAGE,
+        // https://github.com/aws-observability/aws-otel-lambda/issues/361
+        OTEL_PROPAGATORS: 'tracecontext',
         OTEL_EXPORTER_OTLP_ENDPOINT,
         OTEL_EXPORTER_OTLP_HEADERS,
         OTEL_SERVICE_NAME,
         AWS_LAMBDA_EXEC_WRAPPER: '/opt/otel-handler',
         OPENTELEMETRY_COLLECTOR_CONFIG_FILE: '/var/task/collector.yaml',
         DATABASE_SECRET_ARN: secret.secretFullArn ?? '',
+        TEST: 'TEST',
       },
       layers: [
         LayerVersion.fromLayerVersionArn(

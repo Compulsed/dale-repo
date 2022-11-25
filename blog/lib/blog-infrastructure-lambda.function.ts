@@ -252,7 +252,7 @@ const serverHandler = _.memoize(() => {
 const handler = async (event: APIGatewayEvent, context: Context, cb: any): Promise<any> => {
   await sdkInit
 
-  const response = await tracer.startActiveSpan('handler', async (span: any) => {
+  const response = await tracer.startActiveSpan('handler', { root: true }, async (span: any) => {
     const response = await serverHandler()(event, context, cb)
 
     span.end()
