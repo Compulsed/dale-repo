@@ -1,8 +1,5 @@
 import 'source-map-support/register'
 
-import { sdkInit, tracer } from './otel'
-
-// All other deps
 import _ from 'lodash'
 import { APIGatewayEvent, Context } from 'aws-lambda'
 import { GetSecretValueCommand, SecretsManagerClient } from '@aws-sdk/client-secrets-manager'
@@ -12,13 +9,14 @@ import { ApolloServer } from '@apollo/server'
 import { startServerAndCreateLambdaHandler } from '@as-integrations/aws-lambda'
 
 // Custom imports
+import { sdkInit, tracer } from './otel'
 import { Post } from './entities/Post'
 import { getOrmConfig } from './orm-config'
 import { getEnvironment } from './utils/get-environment'
 import { QueryOrder } from '@mikro-orm/core'
 
 const getOrm = _.memoize(async () => {
-  const secret = await tracer.startActiveSpan('get-secret', async (span) => {
+  const secret = await tracer.startActiveSpan('get-secret', async (span: any) => {
     const secretsManagerClient = new SecretsManagerClient({ region: 'us-east-1' })
 
     const { DATABASE_SECRET_ARN } = getEnvironment(['DATABASE_SECRET_ARN'])
@@ -46,7 +44,7 @@ const getOrm = _.memoize(async () => {
   })
 
   // 600ms - 2s to initialize on cold-start due to pg-connect
-  const orm = await tracer.startActiveSpan('orm-init', async (span) => {
+  const orm = await tracer.startActiveSpan('orm-init', async (span: any) => {
     const orm = await MikroORM.init<PostgreSqlDriver>(ormConfig)
     span.end()
     return orm
@@ -219,29 +217,31 @@ const resolvers = {
   },
 }
 
-const server = new ApolloServer({
-  typeDefs,
-  resolvers,
-})
+// ApolloServer generates `graphql.parseSchema` spans. To ensure they're captured
+//  in Hny, initialize in the lambda handler, & cache for subsequent requests
+const serverHandler = _.memoize(() => {
+  const server = new ApolloServer({
+    typeDefs,
+    resolvers,
+  })
 
-// TODO: Consider putting this inside the handler & caching for otel insights
-//  or use a `inject` to ensure the otel SDK is loaded before this file
-const serverHandler = startServerAndCreateLambdaHandler(server, {
-  context: async ({ event, context }) => {
-    const orm = await tracer.startActiveSpan('orm-setup', async (span) => {
-      const orm = await getOrm()
-      span.end()
-      return orm
-    })
+  return startServerAndCreateLambdaHandler(server, {
+    context: async ({ event, context }) => {
+      const orm = await tracer.startActiveSpan('orm-setup', async (span: any) => {
+        const orm = await getOrm()
+        span.end()
+        return orm
+      })
 
-    const em = orm.em.fork()
+      const em = orm.em.fork()
 
-    return {
-      lambdaEvent: event,
-      lambdaContext: context,
-      em,
-    }
-  },
+      return {
+        lambdaEvent: event,
+        lambdaContext: context,
+        em,
+      }
+    },
+  })
 })
 
 /* Performance:
@@ -249,11 +249,11 @@ const serverHandler = startServerAndCreateLambdaHandler(server, {
       - ~2s pg-connect
       - ~1.3-1.7s OTel init, js module, apollo server, etc
 */
-export const handler = async (event: APIGatewayEvent, context: Context, cb: any): Promise<any> => {
+const handler = async (event: APIGatewayEvent, context: Context, cb: any): Promise<any> => {
   await sdkInit
 
-  const response = await tracer.startActiveSpan('handler', async (span) => {
-    const response = await serverHandler(event, context, cb)
+  const response = await tracer.startActiveSpan('handler', { root: true }, async (span: any) => {
+    const response = await serverHandler()(event, context, cb)
 
     span.end()
 
@@ -262,3 +262,5 @@ export const handler = async (event: APIGatewayEvent, context: Context, cb: any)
 
   return response
 }
+
+module.exports = { handler }

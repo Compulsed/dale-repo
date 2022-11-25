@@ -1,4 +1,5 @@
-import { handler } from './blog-infrastructure-lambda.function'
+const handler = require('./blog-infrastructure-lambda.function')
+
 ;(async () => {
   const event: any = {
     httpMethod: 'POST',

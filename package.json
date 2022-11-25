@@ -1,0 +1,25 @@
+{
+  "name": "dale-repo",
+  "version": "1.0.0",
+  "description": "Limitations:",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "prepare": "husky install",
+    "lint": "cd ./blog; npm run build; npx eslint .; npm run format-check"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Compulsed/dale-repo.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Compulsed/dale-repo/issues"
+  },
+  "homepage": "https://github.com/Compulsed/dale-repo#readme",
+  "devDependencies": {
+    "husky": "^8.0.2"
+  }
+}

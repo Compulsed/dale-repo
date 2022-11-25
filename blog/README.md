@@ -36,10 +36,11 @@ Setup:
 - ✅ Support different stack deployments
 - ✅ GraphQL connections
 - ✅ GraphQL URL path
-- ⚠️ OTel exports are not missed
+- ✅ OTel exports are not missed
 - ✅ CI/CD Pipeline
 - ✅ Custom domain name
-- Local express support
+- Local express support (https://www.apollographql.com/docs/apollo-server/deployment/lambda/#customizing-http-behavior)
+- CDK Watch / Hotswap for feedback loops
 
 Replicating:
 

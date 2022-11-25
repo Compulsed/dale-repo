@@ -1,36 +1,53 @@
-// Otel
-import opentelemetry, { diag, DiagConsoleLogger, DiagLogLevel } from '@opentelemetry/api'
-import { NodeSDK } from '@opentelemetry/sdk-node'
-import { getNodeAutoInstrumentations } from '@opentelemetry/auto-instrumentations-node'
-import { OTLPTraceExporter } from '@opentelemetry/exporter-trace-otlp-proto'
-import _ from 'lodash'
+/*
+  For local + lambda telemetry we must handle both cases in very different ways
+  
+  Lambda:
+    - Handles most of the initialization via the layer. All we need to do
+      is pass around the tracer
 
-const traceExporter = new OTLPTraceExporter()
+  Local:
+    - Local manages the spans 'in process', for local to correctly work
+      we need to fully initialize the Otel Node SDK
 
-export const sdk = new NodeSDK({
-  traceExporter,
-  instrumentations: [
-    getNodeAutoInstrumentations({
-      // Creates too much noise in spans
-      '@opentelemetry/instrumentation-fs': {
-        enabled: false,
-      },
-    }),
-  ],
-})
+  As the OTEL libraries do not handle ESM (Models), we must use require as 
+    that is a common denominator between Otel + Lambda
+*/
+const api = require('@opentelemetry/api')
 
-diag.setLogger(new DiagConsoleLogger(), DiagLogLevel.WARN)
+export const tracer = api.trace.getTracer('blog-lambda-tracer')
 
-// Must call await on this method, otherwise traces go missing
-export const sdkInit = sdk
-  .start()
-  .then(() => {
-    // eslint-disable-next-line no-console
-    console.log('Tracing initialized')
+export let sdkInit = Promise.resolve()
+
+if (process.env['LOCAL_INVOKE']) {
+  const { NodeSDK } = require('@opentelemetry/sdk-node')
+  const { getNodeAutoInstrumentations } = require('@opentelemetry/auto-instrumentations-node')
+  const { OTLPTraceExporter } = require('@opentelemetry/exporter-trace-otlp-proto')
+
+  const traceExporter = new OTLPTraceExporter()
+
+  const sdk = new NodeSDK({
+    traceExporter,
+    instrumentations: [
+      getNodeAutoInstrumentations({
+        // Creates too much noise in spans
+        '@opentelemetry/instrumentation-fs': {
+          enabled: false,
+        },
+      }),
+    ],
   })
-  .catch((error) => {
-    // eslint-disable-next-line no-console
-    console.log('Error initializing tracing', error)
-  })
 
-export const tracer = opentelemetry.trace.getTracer('my-service-tracer')
+  api.diag.setLogger(new api.DiagConsoleLogger(), api.DiagLogLevel.WARN)
+
+  // Must call await on this method, otherwise traces go missing
+  sdkInit = sdk
+    .start()
+    .then(() => {
+      // eslint-disable-next-line no-console
+      console.log('Tracing initialized')
+    })
+    .catch((error: any) => {
+      // eslint-disable-next-line no-console
+      console.log('Error initializing tracing', error)
+    })
+}
