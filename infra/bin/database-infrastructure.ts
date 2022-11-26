@@ -7,4 +7,5 @@ const app = new cdk.App()
 
 new DatabaseInfrastructure(app, 'DatabaseInfrastructure', {
   env: { account: process.env.CDK_DEFAULT_ACCOUNT, region: process.env.CDK_DEFAULT_REGION },
+  terminationProtection: true,
 })

@@ -49,14 +49,10 @@ Setup:
 - ✅ Custom domain name
 - Local express support (https://www.apollographql.com/docs/apollo-server/deployment/lambda/#customizing-http-behavior)
 - ✅ CDK Watch / Hotswap for feedback loops
-- Break down main handler class
+- ✅ Break down main handler class
 - Custom function for spans (with error setting for proper errors)
 - Consider using 'internal' / 'client' errors to mask unknown errors in production
-- Cloudfront
 
-Replicating:
+Bonus:
 
-- ⚠️ Signed URL support (requires testing)
-- Schema / query migration
-- Database migration
-- S3 bucket migration
+- Cloudfront for images

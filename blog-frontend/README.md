@@ -5,4 +5,5 @@
 
 **TODO**
 
-- Errors in the UI
+- Include Errors in the UI
+- Friendly urls
