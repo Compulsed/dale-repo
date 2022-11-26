@@ -27,6 +27,14 @@ https://github.com/mikro-orm/mikro-orm/discussions/2219
   - [opentelemetry-lambda](https://github.com/open-telemetry/opentelemetry-lambda/), have not tried. Requires building custom layer
   - Honeycomb-opentelemetry-node - is coming
 
+**GraphQL Error Nodes**
+
+- Non-nullability causes a critical GraphQL schema error
+- HNY treats exceptions like "Span events"
+- https://www.honeycomb.io/blog/uniting-tracing-logs-open-telemetry-span-events - Terms
+  - Events can be thought of as similiar to log lines
+- Can search for Span events using span based searchs
+
 **TODO**
 
 Setup:
@@ -40,9 +48,15 @@ Setup:
 - ✅ CI/CD Pipeline
 - ✅ Custom domain name
 - Local express support (https://www.apollographql.com/docs/apollo-server/deployment/lambda/#customizing-http-behavior)
-- CDK Watch / Hotswap for feedback loops
+- ✅ CDK Watch / Hotswap for feedback loops
+- Break down main handler class
+- Custom function for spans (with error setting for proper errors)
+- Consider using 'internal' / 'client' errors to mask unknown errors in production
+- Cloudfront
 
 Replicating:
 
-- Database migration
+- ⚠️ Signed URL support (requires testing)
 - Schema / query migration
+- Database migration
+- S3 bucket migration

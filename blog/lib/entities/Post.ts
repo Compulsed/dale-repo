@@ -3,14 +3,15 @@ import { CustomBaseEntity } from './CustomBaseEntity'
 
 @Entity()
 export class Post extends CustomBaseEntity {
-  constructor(data: Partial<Post>) {
+  constructor(id: string | null, data: Partial<Post>) {
     super()
+
+    if (id) {
+      this.id = id
+    }
+
     Object.assign(this, data)
   }
-
-  // TODO: Index on this
-  @Property({ type: 'text', nullable: true })
-  postId: string
 
   @Property({ type: 'text', nullable: true })
   title: string

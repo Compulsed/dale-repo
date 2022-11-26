@@ -14,6 +14,10 @@
 */
 const api = require('@opentelemetry/api')
 
+// Exports -- TODO attempt to type these using ESM
+export const trace = api.trace
+export const SpanStatusCode = api.SpanStatusCode
+
 export const tracer = api.trace.getTracer('blog-lambda-tracer')
 
 export let sdkInit = Promise.resolve()

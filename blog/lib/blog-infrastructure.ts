@@ -10,6 +10,8 @@ import { Duration } from 'aws-cdk-lib'
 import { getEnvironment } from './utils/get-environment'
 import { Certificate, CertificateValidation } from 'aws-cdk-lib/aws-certificatemanager'
 import { ApiGateway } from 'aws-cdk-lib/aws-route53-targets'
+import { Bucket, BucketAccessControl, HttpMethods } from 'aws-cdk-lib/aws-s3'
+import { AnyPrincipal, PolicyStatement } from 'aws-cdk-lib/aws-iam'
 
 const { STAGE, OTEL_EXPORTER_OTLP_ENDPOINT, OTEL_EXPORTER_OTLP_HEADERS, OTEL_SERVICE_NAME } = getEnvironment([
   'STAGE',
@@ -47,6 +49,27 @@ export class BlogInfrastructure extends cdk.Stack {
       validation: CertificateValidation.fromDns(zone),
     })
 
+    const imageBucket = new Bucket(this, 'ImageBucket', {
+      transferAcceleration: true,
+      accessControl: BucketAccessControl.PUBLIC_READ,
+      cors: [
+        {
+          allowedHeaders: ['*'],
+          allowedMethods: [HttpMethods.PUT],
+          allowedOrigins: ['*'],
+        },
+      ],
+    })
+
+    // Allow public read all files in bucket
+    imageBucket.addToResourcePolicy(
+      new PolicyStatement({
+        actions: ['s3:GetObject'],
+        resources: [`${imageBucket.bucketArn}/*`],
+        principals: [new AnyPrincipal()],
+      })
+    )
+
     const apiFunction = new NodejsFunction(this, 'ApiFunction', {
       runtime: Runtime.NODEJS_16_X,
       architecture: Architecture.ARM_64,
@@ -56,6 +79,8 @@ export class BlogInfrastructure extends cdk.Stack {
       tracing: Tracing.PASS_THROUGH,
       environment: {
         STAGE,
+        IMAGE_BUCKET_NAME: imageBucket.bucketName,
+        DATABASE_SECRET_ARN: secret.secretFullArn ?? '',
         // https://github.com/aws-observability/aws-otel-lambda/issues/361
         OTEL_PROPAGATORS: 'tracecontext',
         OTEL_EXPORTER_OTLP_ENDPOINT,
@@ -63,8 +88,6 @@ export class BlogInfrastructure extends cdk.Stack {
         OTEL_SERVICE_NAME,
         AWS_LAMBDA_EXEC_WRAPPER: '/opt/otel-handler',
         OPENTELEMETRY_COLLECTOR_CONFIG_FILE: '/var/task/collector.yaml',
-        DATABASE_SECRET_ARN: secret.secretFullArn ?? '',
-        TEST: 'TEST',
       },
       layers: [
         LayerVersion.fromLayerVersionArn(
@@ -95,6 +118,7 @@ export class BlogInfrastructure extends cdk.Stack {
           'graphql',
           'pg',
           '@aws-sdk/client-secrets-manager',
+          '@aws-sdk/client-s3',
         ],
 
         externalModules: [
@@ -131,6 +155,8 @@ export class BlogInfrastructure extends cdk.Stack {
     })
 
     secret?.grantRead(apiFunction)
+
+    imageBucket.grantPut(apiFunction)
 
     const api = new LambdaRestApi(this, 'ApiGateway', {
       handler: apiFunction,
