@@ -1,7 +1,7 @@
 import 'source-map-support/register'
 
 import _ from 'lodash'
-import { APIGatewayEvent, Context } from 'aws-lambda'
+import { APIGatewayEvent, APIGatewayProxyResult, Context } from 'aws-lambda'
 import { GetSecretValueCommand, SecretsManagerClient } from '@aws-sdk/client-secrets-manager'
 import { MikroORM, SqlEntityManager } from '@mikro-orm/postgresql'
 import type { PostgreSqlDriver } from '@mikro-orm/postgresql'
@@ -61,6 +61,7 @@ const typeDefs = `#graphql
   enum PublishStatus {
     PUBLISHED
     HIDDEN
+    DRAFT
   }
 
   type Post {
@@ -81,9 +82,9 @@ const typeDefs = `#graphql
     rawError: String
     graphQLError: String
 
-    post(id: String!): Post
+    post(id: ID!): Post
     posts: [Post]
-    editorPost(id: String!, secret: String!): Post
+    editorPost(id: ID!, secret: String!): Post
     editorPosts(secret: String!): [Post]
     editorSignedUrl(fileName: String!, secret: String!, contentType: String!): String
   }
@@ -105,11 +106,11 @@ const typeDefs = `#graphql
   type Mutation {
     createPost (id: ID, postInput: PostInput!, secret: String!): UpdatePostResponse!
     updatePost (id: ID!, postInput: PostInput!, secret: String!): UpdatePostResponse!
-    publishPost (id: String!, secret: String!): UpdatePostResponse!
-    hidePost (id: String!, secret: String!): UpdatePostResponse!
-    unhidePost (id: String!, secret: String!): UpdatePostResponse!
-    setAvailableWithLink (id: String!, secret: String!): UpdatePostResponse!
-    removeAvailableWithLink (id: String!, secret: String!): UpdatePostResponse!
+    publishPost (id: ID!, secret: String!): UpdatePostResponse!
+    hidePost (id: ID!, secret: String!): UpdatePostResponse!
+    unhidePost (id: ID!, secret: String!): UpdatePostResponse!
+    setAvailableWithLink (id: ID!, secret: String!): UpdatePostResponse!
+    removeAvailableWithLink (id: ID!, secret: String!): UpdatePostResponse!
   }
 `
 
@@ -214,8 +215,7 @@ const resolvers = {
       // TODO: Consider 404 handling
       return postRepository.findOneOrFail({
         id: id,
-        availableWithLink: true,
-        publishStatus: PublishStatus.Published,
+        $or: [{ publishStatus: PublishStatus.Published }, { availableWithLink: true }],
       })
     },
 
@@ -240,7 +240,6 @@ const resolvers = {
       // TODO: Consider 404 handling
       return postRepository.findOneOrFail({
         id: id,
-        availableWithLink: true,
       })
     },
 
@@ -265,7 +264,7 @@ const resolvers = {
 
       const { IMAGE_BUCKET_NAME } = getEnvironment(['IMAGE_BUCKET_NAME'])
 
-      const client = new S3Client({ region: 'us-east-1' })
+      const client = new S3Client({})
 
       const command = new PutObjectCommand({
         Bucket: IMAGE_BUCKET_NAME,
@@ -330,6 +329,7 @@ const resolvers = {
 
       const post = await postRepository.findOneOrFail({
         id: args.id,
+        publishStatus: PublishStatus.Draft,
       })
 
       post.publishStatus = PublishStatus.Published
@@ -474,7 +474,18 @@ const handler = async (event: APIGatewayEvent, context: Context, cb: any): Promi
   await sdkInit
 
   const response = await tracer.startActiveSpan('handler', { root: true }, async (span: any) => {
-    const response = await serverHandler()(event, context, cb)
+    const response = (await serverHandler()(event, context, cb)) as APIGatewayProxyResult
+
+    // TODO: Looks like CORS is meant to be provided by serverless express
+    //    https://www.apollographql.com/docs/apollo-server/deployment/lambda/
+    //  Likely do not need CORS, so we are defining our own headers
+    response['headers'] = Object.assign({}, response['headers'], {
+      'access-control-allow-methods': 'OPTIONS,GET,PUT,POST,DELETE,PATCH,HEAD',
+      'access-control-allow-origin': '*',
+      'access-control-allow-headers':
+        'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token,X-Amz-User-Agent',
+      'access-control-allow-credentials': 'true',
+    })
 
     span.end()
 

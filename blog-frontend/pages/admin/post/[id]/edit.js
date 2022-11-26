@@ -32,8 +32,8 @@ const GET_POST = gql`
 `
 
 const UPDATE_POST = gql`
-  mutation ($postInput: PostInput!, $secret: String!) {
-    updatePost(postInput: $postInput, secret: $secret) {
+  mutation ($id: ID!, $postInput: PostInput!, $secret: String!) {
+    updatePost(id: $id, postInput: $postInput, secret: $secret) {
       status
       post {
         ...PostParts
@@ -150,7 +150,10 @@ const ImageUploader = () => {
       .put(result.data.editorSignedUrl, file, { headers: { 'Content-Type': file.type } })
       .then((response) => response.statusText === 'OK')
 
-    setUploadUrl(result.data.editorSignedUrl.split('?')[0].replace('.s3.', '.s3-accelerate.'))
+    // TODO: Format URL on the server
+    setUploadUrl(
+      result.data.editorSignedUrl.split('?')[0].replace('.s3.', '.s3-accelerate.').replace('.us-east-1.', '.')
+    )
     setUploadState(false)
   }
 
@@ -213,7 +216,7 @@ const PostForm = ({ post }) => {
     }
 
     if (type === 'submit') {
-      updatePost({ variables: { postInput, secret } })
+      updatePost({ variables: { id, postInput, secret } })
     }
   }
 
@@ -225,6 +228,7 @@ const PostForm = ({ post }) => {
         if (confirm('Are you sure you want to publish this post?')) {
           publishPost({ variables: { id: post.id, secret } })
         }
+        return
       }
       case 'HIDE': {
         if (confirm('Are you sure you want to hide this post?')) {

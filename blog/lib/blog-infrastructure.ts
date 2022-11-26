@@ -170,6 +170,7 @@ export class BlogInfrastructure extends cdk.Stack {
       defaultCorsPreflightOptions: {
         allowOrigins: Cors.ALL_ORIGINS,
         allowMethods: Cors.ALL_METHODS,
+        allowCredentials: true,
       },
     })
 
