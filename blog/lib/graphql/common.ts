@@ -6,17 +6,26 @@ export const commonTypeDefs = `#graphql
   type Query {
     hello: String!
     rawError: String
+    clientError: String
     graphQLError: String
   }
 `
 
 export const commonResolvers = {
   Query: {
-    rawError: async () => {
+    rawError: () => {
       throw new Error('Raw error')
     },
 
-    graphQLError: async () => {
+    clientError: () => {
+      throw new GraphQLError('Client Error', {
+        extensions: {
+          code: 'CLIENT_ERROR',
+        },
+      })
+    },
+
+    graphQLError: () => {
       const activeSpan = trace.getActiveSpan()
 
       activeSpan.setStatus({

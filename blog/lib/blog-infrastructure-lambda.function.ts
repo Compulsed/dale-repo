@@ -5,15 +5,17 @@ import { APIGatewayEvent, APIGatewayProxyResult, Context } from 'aws-lambda'
 import { ApolloServer } from '@apollo/server'
 import { startServerAndCreateLambdaHandler } from '@as-integrations/aws-lambda'
 import { mergeResolvers, mergeTypeDefs } from '@graphql-tools/merge'
+import { unwrapResolverError } from '@apollo/server/errors'
 
 // Custom imports
-import { sdkInit, tracer } from './otel'
+import { sdkInit, SpanStatusCode, trace, tracer } from './otel'
 import { getEnvironment } from './utils/get-environment'
 
 // Resolvers
 import { postResolvers, postTypeDefs } from './graphql/post'
 import { commonResolvers, commonTypeDefs } from './graphql/common'
 import { getOrm } from './orm-config'
+import { GraphQLError } from 'graphql'
 
 // ApolloServer generates `graphql.parseSchema` spans. To ensure they're captured
 //  in Hny, initialize in the lambda handler, & cache for subsequent requests
@@ -24,6 +26,28 @@ const serverHandler = _.memoize(() => {
     typeDefs: mergeTypeDefs([commonTypeDefs, postTypeDefs]),
     resolvers: mergeResolvers([commonResolvers, postResolvers]),
     includeStacktraceInErrorResponses: STAGE !== 'prod',
+    formatError: (formattedError, error) => {
+      // Capture uncaught exceptions / INTERNAL_SERVER_ERROR as errors in HNY for alerting
+      if (
+        !(unwrapResolverError(error) instanceof GraphQLError) ||
+        formattedError.extensions?.code === 'INTERNAL_SERVER_ERROR'
+      ) {
+        const activeSpan = trace.getActiveSpan()
+
+        activeSpan.setStatus({
+          code: SpanStatusCode.ERROR,
+        })
+
+        activeSpan.recordException(unwrapResolverError(error))
+
+        return new GraphQLError('Internal server error 🔥', {
+          path: formattedError.path,
+          extensions: formattedError.extensions,
+        })
+      }
+
+      return formattedError
+    },
   })
 
   return startServerAndCreateLambdaHandler(server, {
