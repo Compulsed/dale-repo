@@ -14,23 +14,23 @@ export class Post extends CustomBaseEntity {
   }
 
   @Property({ type: 'text', nullable: true })
-  title: string
+  title: string | null
 
   @Property({ type: 'text', nullable: true })
-  body: string
+  body: string | null
 
   @Property({ type: 'text', nullable: true })
-  shortDescription: string
+  shortDescription: string | null
 
   @Property({ type: 'text', nullable: true })
-  longDescription: string
+  longDescription: string | null
 
   @Property({ type: 'text', nullable: true })
-  imageUrl: string
+  imageUrl: string | null
 
   @Property({ type: 'text', nullable: true })
-  publishStatus: string
+  publishStatus: string | null
 
   @Property({ type: 'boolean', nullable: true })
-  availableWithLink: boolean
+  availableWithLink: boolean | null
 }

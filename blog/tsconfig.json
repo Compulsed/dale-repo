@@ -20,7 +20,8 @@
     "esModuleInterop": true,
     "strictPropertyInitialization": false,
     "typeRoots": ["./node_modules/@types"],
-    "noEmit": true
+    "noEmit": true,
+    "resolveJsonModule": true
   },
   "exclude": ["node_modules", "cdk.out"]
 }
