@@ -11,6 +11,10 @@
     {
       "name": "🤖 Blog",
       "path": "./blog"
+    },
+    {
+      "name": "🎨 Blog Frontend",
+      "path": "./blog-frontend"
     }
   ],
   "settings": {

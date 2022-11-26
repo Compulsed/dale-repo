@@ -1,7 +1,7 @@
 import * as cdk from 'aws-cdk-lib'
 import { Construct } from 'constructs'
 import { NodejsFunction } from 'aws-cdk-lib/aws-lambda-nodejs'
-import { LambdaRestApi } from 'aws-cdk-lib/aws-apigateway'
+import { Cors, LambdaRestApi } from 'aws-cdk-lib/aws-apigateway'
 import { Architecture, LayerVersion, Runtime, Tracing } from 'aws-cdk-lib/aws-lambda'
 import { SubnetType, Vpc } from 'aws-cdk-lib/aws-ec2'
 import { ARecord, PublicHostedZone, RecordTarget } from 'aws-cdk-lib/aws-route53'
@@ -166,6 +166,10 @@ export class BlogInfrastructure extends cdk.Stack {
       domainName: {
         certificate,
         domainName,
+      },
+      defaultCorsPreflightOptions: {
+        allowOrigins: Cors.ALL_ORIGINS,
+        allowMethods: Cors.ALL_METHODS,
       },
     })
 
