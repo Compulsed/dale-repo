@@ -26,7 +26,7 @@ export class BlogInfrastructure extends cdk.Stack {
   constructor(scope: Construct, id: string, props?: cdk.StackProps) {
     super(scope, id, props)
 
-    // TODO: Import from Infra  stack
+    // TODO: Import from Infra stack
     const hostedZoneId = 'Z05982951JTEV3EHAO42B'
     const rootName = 'api-blog.dalejsalter.com'
     const recordName = STAGE
