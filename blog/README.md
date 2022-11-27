@@ -52,6 +52,11 @@ Setup:
 - ✅ Break down main handler class
 - ✅ Consider using 'internal' / 'client' errors to mask unknown errors in production
 - Custom function for spans (with error setting for proper errors)
+- Graph Resolver Caching
+- Lambda init time tracing
+- Frontend tracing
+- Vercel headers (Stale-While-Revalidate)
+- S3 backups
 
 Bonus:
 

@@ -73,7 +73,7 @@ export class BlogInfrastructure extends cdk.Stack {
     const apiFunction = new NodejsFunction(this, 'ApiFunction', {
       runtime: Runtime.NODEJS_16_X,
       architecture: Architecture.ARM_64,
-      memorySize: 1024,
+      memorySize: 1536,
       timeout: Duration.seconds(30),
       entry: __dirname + '/blog-infrastructure-lambda.function.ts',
       tracing: Tracing.PASS_THROUGH,
