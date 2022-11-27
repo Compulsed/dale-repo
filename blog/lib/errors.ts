@@ -5,3 +5,11 @@ export const notFoundError = (entity: string) => {
     extensions: { code: 'NOT_FOUND' },
   })
 }
+
+export const invalidSecretError = () => {
+  throw new GraphQLError('Invalid Secret', {
+    extensions: {
+      code: 'INVALID_SECRET_ERROR',
+    },
+  })
+}
