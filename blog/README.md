@@ -3,9 +3,8 @@
 **Setting up a new environment**
 
 - `port-forward`
-- `npx mikro-orm database:create`
-- `npx mikro-orm migration:up`
 - `npx cdk deploy`
+- `npx mikro-orm migration:up` -- Depends on role / secret created from deployment
 
 **Mikro Orm Notes**
 
@@ -51,13 +50,13 @@ Setup:
 - ✅ CDK Watch / Hotswap for feedback loops
 - ✅ Break down main handler class
 - ✅ Consider using 'internal' / 'client' errors to mask unknown errors in production
+- ✅ Database roles https://constructs.dev/packages/cdk-rds-sql/v/2.0.0?lang=typescript
 - Custom function for spans (with error setting for proper errors)
 - Graph Resolver Caching
 - Lambda init time tracing
 - Frontend tracing
 - Vercel headers (Stale-While-Revalidate)
 - S3 backups
-- Database roles https://constructs.dev/packages/cdk-rds-sql/v/2.0.0?lang=typescript
 
 Bonus:
 

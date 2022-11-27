@@ -5,6 +5,7 @@ import { MikroORM, Options, PostgreSqlDriver } from '@mikro-orm/postgresql'
 
 import { tracer } from './otel'
 import { Post } from './entities/Post'
+import { notFoundError } from './errors'
 
 export const getOrmConfig = (config: Options) => {
   const sharedConfig: Options = {
@@ -54,6 +55,9 @@ export const getOrm = _.memoize(async () => {
     host: host,
     password: secretValues.password,
     port: parseInt(secretValues.port, 10),
+    findOneOrFailHandler: (entityName: string) => {
+      return notFoundError(entityName)
+    },
   })
 
   // 600ms - 2s to initialize on cold-start due to pg-connect

@@ -10,6 +10,7 @@ import { QueryOrder } from '@mikro-orm/core'
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner'
 import { GraphQLError } from 'graphql'
 import { LambdaContext } from '../graphql-types'
+import { invalidSecretError } from '../errors'
 
 type CreatePostArgs = {
   id?: string
@@ -59,14 +60,6 @@ const invalidSecretResponse = (): UpdatePostResponse => {
     errorMessage: 'Invalid Secret',
     post: null,
   }
-}
-
-const raiseInvalidSecretError = () => {
-  throw new GraphQLError('Invalid Secret', {
-    extensions: {
-      code: 'INVALID_SECRET_ERROR',
-    },
-  })
 }
 
 export const postTypeDefs = `#graphql
@@ -158,7 +151,6 @@ export const postResolvers = {
     post: (_: any, { id }: { id: string }, context: LambdaContext): Promise<Post> => {
       const postRepository = context.em.getRepository(Post)
 
-      // TODO: Consider 404 handling
       return postRepository.findOneOrFail({
         id: id,
         $or: [{ publishStatus: PublishStatus.Published }, { availableWithLink: true }],
@@ -178,7 +170,7 @@ export const postResolvers = {
 
     editorPost: (_: any, { id, secret }: any, context: LambdaContext): Promise<Post> => {
       if (!isSecret(secret)) {
-        raiseInvalidSecretError()
+        invalidSecretError()
       }
 
       const postRepository = context.em.getRepository(Post)
@@ -191,11 +183,7 @@ export const postResolvers = {
 
     editorPosts: (_: any, { secret }: any, context: LambdaContext): Promise<Post[]> => {
       if (!isSecret(secret)) {
-        raiseInvalidSecretError()
-      }
-
-      if (!isSecret(secret)) {
-        raiseInvalidSecretError()
+        invalidSecretError()
       }
 
       const postRepository = context.em.getRepository(Post)
@@ -205,7 +193,7 @@ export const postResolvers = {
 
     editorSignedUrl: async (_: any, { fileName, contentType, secret }: any) => {
       if (!isSecret(secret)) {
-        raiseInvalidSecretError()
+        invalidSecretError()
       }
 
       const { IMAGE_BUCKET_NAME } = getEnvironment(['IMAGE_BUCKET_NAME'])
