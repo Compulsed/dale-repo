@@ -12,8 +12,7 @@ import { Certificate, CertificateValidation } from 'aws-cdk-lib/aws-certificatem
 import { ApiGateway } from 'aws-cdk-lib/aws-route53-targets'
 import { Bucket, BucketAccessControl, HttpMethods } from 'aws-cdk-lib/aws-s3'
 import { AnyPrincipal, PolicyStatement } from 'aws-cdk-lib/aws-iam'
-import { AuroraPostgresEngineVersion, DatabaseCluster, DatabaseClusterEngine } from 'aws-cdk-lib/aws-rds'
-import { Provider, Role, Database } from 'cdk-rds-sql'
+import { ISecret } from 'aws-cdk-lib/aws-secretsmanager'
 
 const { STAGE, OTEL_EXPORTER_OTLP_ENDPOINT, OTEL_EXPORTER_OTLP_HEADERS, OTEL_SERVICE_NAME } = getEnvironment([
   'STAGE',
@@ -22,56 +21,25 @@ const { STAGE, OTEL_EXPORTER_OTLP_ENDPOINT, OTEL_EXPORTER_OTLP_HEADERS, OTEL_SER
   'OTEL_SERVICE_NAME',
 ])
 
+interface BlogInfrastructureStackProps extends cdk.StackProps {
+  databaseSecret: ISecret
+}
+
 export class BlogInfrastructure extends cdk.Stack {
-  constructor(scope: Construct, id: string, props?: cdk.StackProps) {
+  constructor(scope: Construct, id: string, props: BlogInfrastructureStackProps) {
     super(scope, id, props)
 
-    // TODO: Import from Infra stack
+    // TODO: Can we import any of these from the infra stack?
     const hostedZoneId = 'Z05982951JTEV3EHAO42B'
     const rootName = 'api-blog.dalejsalter.com'
     const recordName = STAGE
     const domainName = `${recordName}.${rootName}`
-    const databaseName = `blog-${STAGE}`
-    const databaseRoleName = `blog-${STAGE}-role`
 
-    const importedSecretArn = cdk.Fn.importValue('DatabaseSecretArn')
-
-    // TODO: Import from Infra stack?
     const vpc = Vpc.fromLookup(this, 'Vpc', {
       vpcName: 'DatabaseInfrastructure/Vpc',
     })
 
-    const adminSecret = secretsManager.Secret.fromSecretCompleteArn(this, 'Secret', importedSecretArn)
-
-    // Database
-    const dbCluster = DatabaseCluster.fromDatabaseClusterAttributes(this, 'DbCluster', {
-      clusterIdentifier: adminSecret.secretValueFromJson('dbClusterIdentifier').unsafeUnwrap(),
-      engine: DatabaseClusterEngine.auroraPostgres({
-        version: AuroraPostgresEngineVersion.VER_13_6,
-      }),
-      port: adminSecret.secretValueFromJson('port').unsafeUnwrap() as any,
-      clusterEndpointAddress: adminSecret.secretValueFromJson('host').unsafeUnwrap(),
-    })
-
-    const provider = new Provider(this, 'Provider', {
-      vpc: vpc,
-      cluster: dbCluster,
-      secret: adminSecret,
-    })
-
-    const dbRole = new Role(this, 'Role', {
-      provider: provider,
-      roleName: databaseRoleName,
-      databaseName: databaseName,
-    })
-
-    new Database(this, 'Database', {
-      provider: provider,
-      databaseName: databaseName,
-      owner: dbRole,
-    })
-
-    const databaseSecret = dbRole.secret
+    const databaseSecret = props.databaseSecret
 
     // DNS
     const zone = PublicHostedZone.fromHostedZoneAttributes(this, 'HostedZone', {

@@ -43,6 +43,12 @@ jobs:
         working-directory: ./
         run: ./bin/port-forward
 
+      # TODO: Up script depends on CDK Deploy, so that it has the user / role / secrets
+      #   This means that to deploy a new environment we must run Deploy -> Up.
+      #   This limitation means that we cannot use this CI flow to spin up / down environments, which
+      #   would be useful for per PR environments
+      # Solutions
+      #   - Split out these into separate stacks
       # - name: Up Script
       #   working-directory: ./blog
       #   run: npx mikro-orm migration:up
