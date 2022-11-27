@@ -6,12 +6,14 @@ import { Architecture, LayerVersion, Runtime, Tracing } from 'aws-cdk-lib/aws-la
 import { SubnetType, Vpc } from 'aws-cdk-lib/aws-ec2'
 import { ARecord, PublicHostedZone, RecordTarget } from 'aws-cdk-lib/aws-route53'
 import * as secretsManager from 'aws-cdk-lib/aws-secretsmanager'
-import { Duration } from 'aws-cdk-lib'
+import { CfnOutput, Duration } from 'aws-cdk-lib'
 import { getEnvironment } from './utils/get-environment'
 import { Certificate, CertificateValidation } from 'aws-cdk-lib/aws-certificatemanager'
 import { ApiGateway } from 'aws-cdk-lib/aws-route53-targets'
 import { Bucket, BucketAccessControl, HttpMethods } from 'aws-cdk-lib/aws-s3'
 import { AnyPrincipal, PolicyStatement } from 'aws-cdk-lib/aws-iam'
+import { AuroraPostgresEngineVersion, DatabaseCluster, DatabaseClusterEngine } from 'aws-cdk-lib/aws-rds'
+import { Provider, Role, Database } from 'cdk-rds-sql'
 
 const { STAGE, OTEL_EXPORTER_OTLP_ENDPOINT, OTEL_EXPORTER_OTLP_HEADERS, OTEL_SERVICE_NAME } = getEnvironment([
   'STAGE',
@@ -29,6 +31,8 @@ export class BlogInfrastructure extends cdk.Stack {
     const rootName = 'api-blog.dalejsalter.com'
     const recordName = STAGE
     const domainName = `${recordName}.${rootName}`
+    const databaseName = `blog-${STAGE}`
+    const databaseRoleName = `blog-${STAGE}-role`
 
     const importedSecretArn = cdk.Fn.importValue('DatabaseSecretArn')
 
@@ -37,8 +41,39 @@ export class BlogInfrastructure extends cdk.Stack {
       vpcName: 'DatabaseInfrastructure/Vpc',
     })
 
-    const secret = secretsManager.Secret.fromSecretCompleteArn(this, 'Secret', importedSecretArn)
+    const adminSecret = secretsManager.Secret.fromSecretCompleteArn(this, 'Secret', importedSecretArn)
 
+    // Database
+    const dbCluster = DatabaseCluster.fromDatabaseClusterAttributes(this, 'DbCluster', {
+      clusterIdentifier: adminSecret.secretValueFromJson('dbClusterIdentifier').unsafeUnwrap(),
+      engine: DatabaseClusterEngine.auroraPostgres({
+        version: AuroraPostgresEngineVersion.VER_13_6,
+      }),
+      port: adminSecret.secretValueFromJson('port').unsafeUnwrap() as any,
+      clusterEndpointAddress: adminSecret.secretValueFromJson('host').unsafeUnwrap(),
+    })
+
+    const provider = new Provider(this, 'Provider', {
+      vpc: vpc,
+      cluster: dbCluster,
+      secret: adminSecret,
+    })
+
+    const dbRole = new Role(this, 'Role', {
+      provider: provider,
+      roleName: databaseRoleName,
+      databaseName: databaseName,
+    })
+
+    new Database(this, 'Database', {
+      provider: provider,
+      databaseName: databaseName,
+      owner: dbRole,
+    })
+
+    const databaseSecret = dbRole.secret
+
+    // DNS
     const zone = PublicHostedZone.fromHostedZoneAttributes(this, 'HostedZone', {
       hostedZoneId,
       zoneName: rootName,
@@ -49,6 +84,7 @@ export class BlogInfrastructure extends cdk.Stack {
       validation: CertificateValidation.fromDns(zone),
     })
 
+    // S3 Bucket
     const imageBucket = new Bucket(this, 'ImageBucket', {
       transferAcceleration: true,
       accessControl: BucketAccessControl.PUBLIC_READ,
@@ -61,7 +97,6 @@ export class BlogInfrastructure extends cdk.Stack {
       ],
     })
 
-    // Allow public read all files in bucket
     imageBucket.addToResourcePolicy(
       new PolicyStatement({
         actions: ['s3:GetObject'],
@@ -80,7 +115,7 @@ export class BlogInfrastructure extends cdk.Stack {
       environment: {
         STAGE,
         IMAGE_BUCKET_NAME: imageBucket.bucketName,
-        DATABASE_SECRET_ARN: secret.secretFullArn ?? '',
+        DATABASE_SECRET_ARN: databaseSecret.secretArn,
         // https://github.com/aws-observability/aws-otel-lambda/issues/361
         OTEL_PROPAGATORS: 'tracecontext',
         OTEL_EXPORTER_OTLP_ENDPOINT,
@@ -154,7 +189,7 @@ export class BlogInfrastructure extends cdk.Stack {
       }),
     })
 
-    secret?.grantRead(apiFunction)
+    databaseSecret.grantRead(apiFunction)
 
     imageBucket.grantPut(apiFunction)
 
@@ -178,6 +213,11 @@ export class BlogInfrastructure extends cdk.Stack {
       zone: zone,
       target: RecordTarget.fromAlias(new ApiGateway(api)),
       recordName: recordName,
+    })
+
+    new CfnOutput(this, 'DatabaseSecretArn', {
+      exportName: `BlogInfrastructure-${STAGE}-DatabaseSecretArn`,
+      value: databaseSecret.secretArn,
     })
   }
 }

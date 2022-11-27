@@ -1,18 +1,14 @@
 import _ from 'lodash'
 import { GetSecretValueCommand, SecretsManagerClient } from '@aws-sdk/client-secrets-manager'
 import { getEnvironment } from './utils/get-environment'
-import { MikroORM, PostgreSqlDriver } from '@mikro-orm/postgresql'
+import { MikroORM, Options, PostgreSqlDriver } from '@mikro-orm/postgresql'
 
 import { tracer } from './otel'
 import { Post } from './entities/Post'
 
-export const getOrmConfig = (config: any) => {
-  const { STAGE } = getEnvironment(['STAGE'])
-
-  const sharedConfig = {
+export const getOrmConfig = (config: Options) => {
+  const sharedConfig: Options = {
     type: 'postgresql',
-
-    dbName: `blog-${STAGE}`,
 
     debug: true,
 
@@ -20,6 +16,9 @@ export const getOrmConfig = (config: any) => {
       path: './lib/migrations',
       tableName: 'migrations',
       transactional: true,
+      // Fixes https://github.com/mikro-orm/mikro-orm/issues/190
+      //  - Original error: set session_replication_role = 'replica'; - permission denied to set parameter "session_replication_role"
+      disableForeignKeys: false,
     },
 
     entities: [Post],
@@ -51,6 +50,7 @@ export const getOrm = _.memoize(async () => {
 
   const ormConfig = getOrmConfig({
     user: secretValues.username,
+    dbName: secretValues.dbname,
     host: host,
     password: secretValues.password,
     port: parseInt(secretValues.port, 10),

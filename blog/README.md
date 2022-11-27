@@ -57,7 +57,9 @@ Setup:
 - Frontend tracing
 - Vercel headers (Stale-While-Revalidate)
 - S3 backups
+- Database roles https://constructs.dev/packages/cdk-rds-sql/v/2.0.0?lang=typescript
 
 Bonus:
 
 - Cloudfront for images
+- GraphQL Subscriptions
