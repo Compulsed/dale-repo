@@ -3,12 +3,10 @@ import { v4 } from 'uuid'
 import { PutObjectCommand, S3Client } from '@aws-sdk/client-s3'
 
 // Custom imports
-import { SpanStatusCode, trace } from '../otel'
 import { Post } from '../entities/Post'
 import { getEnvironment } from '../utils/get-environment'
 import { QueryOrder } from '@mikro-orm/core'
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner'
-import { GraphQLError } from 'graphql'
 import { LambdaContext } from '../graphql-types'
 import { invalidSecretError } from '../errors'
 
@@ -122,32 +120,6 @@ export const postResolvers = {
   },
 
   Query: {
-    rawError: async () => {
-      throw new Error('Raw error')
-    },
-
-    graphQLError: async () => {
-      const activeSpan = trace.getActiveSpan()
-
-      activeSpan.setStatus({
-        code: SpanStatusCode.ERROR,
-        message: 'Error',
-      })
-
-      throw new GraphQLError('Custom GraphQLError', {
-        extensions: {
-          code: 'YOUR_ERROR_CODE',
-          myCustomExtensions: {
-            message: 'data',
-          },
-        },
-      })
-    },
-
-    hello: async (_: any, __: any, ___: LambdaContext) => {
-      return 'world!!'
-    },
-
     post: (_: any, { id }: { id: string }, context: LambdaContext): Promise<Post> => {
       const postRepository = context.em.getRepository(Post)
 
