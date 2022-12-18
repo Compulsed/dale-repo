@@ -1,67 +1,47 @@
-import Router from 'next/router'
-import { useEffect } from 'react';
+import { ApolloProvider } from '@apollo/client'
+import { DefaultSeo } from 'next-seo'
+import { GoogleAnalytics } from 'nextjs-google-analytics'
 
-import { Container } from 'next/app';
-import { DefaultSeo } from 'next-seo';
-import { ThemeProvider } from 'styled-components'
-import 'bootstrap/dist/css/bootstrap.min.css';
-import '../css/styles.css'
+import client from '../lib/apolloClient'
 
-import * as gtag from '../libs/gtag'
+// CSS
+import 'bootstrap/dist/css/bootstrap.min.css'
+import '../styles/globals.css'
 
-
-const theme = {
-  colors: {
-    primary: '#0070f3',
+const SEO = {
+  title: 'Dale Salter Blog',
+  description: 'Serverless, Software Engineering, Leadership, DevOps',
+  openGraph: {
+    type: 'website',
+    url: `${process.env.NEXT_PUBLIC_VERCEL_URL}`,
+    title: 'Dale Salter Blog',
+    description: 'Serverless, Software Engineering, Leadership, DevOps',
+    images: [
+      {
+        url: 'https://blog-production-image-bucket.s3-accelerate.amazonaws.com/logo-4.png',
+        width: 800,
+        height: 800,
+        alt: 'Blog Artwork',
+        type: 'image/png',
+      },
+    ],
+    siteName: 'Dale Salter Blog',
+  },
+  twitter: {
+    handle: '@enepture',
+    site: '@enepture',
+    cardType: 'summary_large_image',
   },
 }
 
-import { withApollo } from '../libs/with-apollo';
-
-const App = ({ Component, pageProps }) => {
-  useEffect(() => {
-    const handleRouteChange = (url) => {
-      gtag.pageview(url)
-    }
-    Router.events.on('routeChangeComplete', handleRouteChange)
-    return () => {
-      Router.events.off('routeChangeComplete', handleRouteChange)
-    }
-  }, [])
-
+function MyApp({ Component, pageProps }) {
   return (
-    <Container>
-      <ThemeProvider theme={theme}>
-        <DefaultSeo
-            title='Dale Salter Blog'
-            description='Blog which talks about Serverless, Software Engineering, Leadership, DevOps'      
-            openGraph={{
-              title: 'Dale Salter Blog',
-              description: 'Blog which talks about Serverless, Software Engineering, Leadership, DevOps',
-              type: 'website',
-              locale: 'en_IE',
-              url: 'https://dalejsalter.com/',
-              site_name: 'Dale Salter',
-              images: [
-                {
-                  url: 'blog-production-image-bucket.s3-accelerate.amazonaws.com/logo-4.png',
-                  width: 512,
-                  height: 512,
-                  alt: 'Dale Salter Site Logo',
-                },
-              ]
-            }}
-            twitter={{
-              handle: '@handle',
-              site: '@site',
-              cardType: 'summary_large_image',
-            }}
-          />
-        <Component {...pageProps} />
-      </ThemeProvider>
-    </Container>
-
-  );
+    <ApolloProvider client={client}>
+      <GoogleAnalytics trackPageViews />
+      <DefaultSeo {...SEO}></DefaultSeo>
+      <Component {...pageProps} />
+    </ApolloProvider>
+  )
 }
 
-export default withApollo({ ssr: true })(App);
+export default MyApp

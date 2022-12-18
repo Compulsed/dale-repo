@@ -1,19 +1,18 @@
-import { useEffect } from 'react';
-import { useRouter, withRouter } from 'next/router';
+import { useEffect } from 'react'
+import { useRouter, withRouter } from 'next/router'
 
 const Login = (props) => {
-    const router = useRouter();
+  const router = useRouter()
 
-    useEffect(() => {
-        localStorage.setItem(
-            '_password',
-            props.router.query.id
-        );
+  if (props.router.query.id) {
+    localStorage.setItem('_password', props.router.query.id)
+  }
 
-        router.push(`/`, `/`);
-    }, [])
+  useEffect(() => {
+    router.push(`/admin`, `/admin`)
+  }, [])
 
-    return <div></div>
+  return <div></div>
 }
 
-export default withRouter(Login);
+export default withRouter(Login)

@@ -1,9 +1,8 @@
-**Vercel Notes**
+# Dale Blog Frontend
 
-- Must use node 16
-- Login - /login/daleisadmin
+TODO
 
-**TODO**
-
-- Include Errors in the UI
-- Friendly urls
+- ✅ Rich snippets for blog images / summaries (with Google using the right information) -- next seo?
+- ✅ GA Tag
+- ✅ Admin tooling
+- ✅ Sitemap
