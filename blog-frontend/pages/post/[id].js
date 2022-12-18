@@ -106,7 +106,7 @@ export default function Post({ post }) {
                 type: 'image/png',
               },
             ],
-            siteName: 'Dale Salter Blog',
+            siteName: 'Dale Salter - Blog',
           }}
           twitter={{
             handle: '@enepture',
