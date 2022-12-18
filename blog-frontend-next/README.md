@@ -1,4 +1,11 @@
-This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+# Dale Blog Frontend
+
+TODO
+
+- Rich snippets for blog images / summaries (with Google using the right information) -- next seo?
+- GA Tag
+- Admin tooling
+- Sitemap
 
 ## Getting Started
 

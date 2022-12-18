@@ -26,7 +26,10 @@
     "editor.insertSpaces": true,
     "editor.detectIndentation": false,
     "editor.defaultFormatter": "esbenp.prettier-vscode",
-    "editor.formatOnSave": true
+    "editor.formatOnSave": true,
+    "explorer.autoRevealExclude": {
+      "**/node_modules": true
+    }
   },
   "extensions": {
     "recommendations": ["streetsidesoftware.code-spell-checker", "esbenp.prettier-vscode", "dbaeumer.vscode-eslint"]

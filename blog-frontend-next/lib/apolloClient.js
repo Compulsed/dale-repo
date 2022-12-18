@@ -1,10 +1,8 @@
 import { ApolloClient, createHttpLink, InMemoryCache } from '@apollo/client'
 import { setContext } from '@apollo/client/link/context'
 
-const API_URL = 'https://dev.api-blog.dalejsalter.com/'
-
 const httpLink = createHttpLink({
-  uri: API_URL,
+  uri: process.env.NEXT_PUBLIC_API_URL,
 })
 
 const authLink = setContext((_, { headers }) => {

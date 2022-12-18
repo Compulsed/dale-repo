@@ -8,7 +8,7 @@ export const Header = () => {
     <SpacedContainer>
       <Row>
         <Col style={{ flex: '0 0 50px', padding: 0 }}>
-          <Link href="/" as="/" passHref>
+          <Link href="/" as="/" passHref legacyBehavior>
             <a>
               <img
                 style={{ width: '100%' }}
@@ -18,7 +18,7 @@ export const Header = () => {
           </Link>
         </Col>
         <Col>
-          <Link href="/" as="/" passHref>
+          <Link href="/" as="/" passHref legacyBehavior>
             <TitleLink>
               <Title>Dale Salter</Title>
             </TitleLink>
@@ -31,14 +31,15 @@ export const Header = () => {
 }
 
 const Title = styled.h1`
-  font-family: Inter;
   font-weight: 900;
+  font-size: 2.5rem;
   margin-bottom: 0;
   letter-spacing: -0.02em;
 `
 
 const TitleLink = styled.a`
   color: inherit;
+  text-decoration: none;
 
   :hover {
     text-decoration: none;

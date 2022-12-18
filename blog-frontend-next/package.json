@@ -10,11 +10,27 @@
   },
   "dependencies": {
     "@apollo/client": "^3.7.1",
+    "autosize": "^5.0.2",
+    "axios": "^1.2.1",
+    "bootstrap": "^5.2.3",
+    "disqus-react": "^1.1.5",
     "eslint": "8.28.0",
     "eslint-config-next": "13.0.5",
+    "moment": "^2.29.4",
     "next": "13.0.5",
+    "next-seo": "^5.15.0",
     "react": "18.2.0",
+    "react-bootstrap": "^2.7.0",
     "react-dom": "18.2.0",
+    "react-dropzone": "^14.2.3",
+    "rehype-raw": "^6.1.1",
+    "styled-components": "^5.3.6",
+    "use-debounce": "^9.0.2",
+    "uuid": "^9.0.0",
     "vercel": "^28.5.6"
+  },
+  "devDependencies": {
+    "babel-plugin-styled-components": "^2.0.7",
+    "react-markdown": "^8.0.4"
   }
 }
