@@ -39,7 +39,8 @@ const createSitemap = ({ posts }) => `<?xml version="1.0" encoding="UTF-8"?>
 
 class Sitemap extends React.Component {
   static async getInitialProps({ res }) {
-    const postData = await request(process.env.GRAPHQL_URL, GET_POSTS)
+    // TODO Use apollo client
+    const postData = await request(process.env.NEXT_PUBLIC_API_URL, GET_POSTS)
 
     const siteMap = {
       posts: (postData && postData.posts) || [],

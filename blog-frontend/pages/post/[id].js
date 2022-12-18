@@ -1,18 +1,24 @@
 import Head from 'next/head'
 
-import { gql, useQuery } from '@apollo/client'
-import { withRouter } from 'next/router'
 import Disqus from 'disqus-react'
+import { NextSeo } from 'next-seo'
 
 import { Container, Row, Col } from 'react-bootstrap'
 import { Header } from '../../components/layout/header'
 import { Footer } from '../../components/layout/footer'
 import { PostCard } from '../../components/card'
-import { CenterSpinner } from '../../components/spinner'
 import { BlogMarkdown } from '../../components/blog-markdown'
 
-const GET_POSTS = gql`
-  query ($id: ID!) {
+const POSTS_QUERY = `
+  query QueryPosts {
+    posts {
+      id
+    }
+  }
+`
+
+const POST_QUERY = `
+  query QueryPost($id: ID!) {
     post(id: $id) {
       id
       title
@@ -26,6 +32,42 @@ const GET_POSTS = gql`
   }
 `
 
+export async function getStaticPaths() {
+  // TODO use apollo client
+  const res = await fetch(process.env.NEXT_PUBLIC_API_URL, {
+    method: 'POST',
+    body: JSON.stringify({ query: POSTS_QUERY }, null, 2),
+    headers: {
+      'Content-Type': 'application/json',
+    },
+  })
+
+  const data = await res.json()
+
+  const paths = data.data.posts.map((post) => ({
+    params: { id: post.id },
+  }))
+
+  // { fallback: false } means other routes should 404
+  return { paths, fallback: false }
+}
+
+export async function getStaticProps(context) {
+  const res = await fetch(process.env.NEXT_PUBLIC_API_URL, {
+    method: 'POST',
+    body: JSON.stringify({ query: POST_QUERY, variables: { id: context.params.id } }, null, 2),
+    headers: {
+      'Content-Type': 'application/json',
+    },
+  })
+
+  const data = await res.json()
+
+  return {
+    props: { post: data.data.post },
+  }
+}
+
 const DisqusComponent = ({ post }) => {
   const disqusShortname = 'dalejsalter'
 
@@ -38,25 +80,48 @@ const DisqusComponent = ({ post }) => {
   return <Disqus.DiscussionEmbed shortname={disqusShortname} config={disqusConfig} />
 }
 
-function Post({ router }) {
-  const { loading, error, data } = useQuery(GET_POSTS, { variables: { id: router.query.id } })
-
-  const post = data && data.post
-
+export default function Post({ post }) {
   return (
     <div>
       <Head>
-        <title>Dale Salter</title>
         <link rel="icon" href="https://blog-production-image-bucket.s3-accelerate.amazonaws.com/logo-4.png" />
       </Head>
 
       <main>
+        <NextSeo
+          title={post.title}
+          description={post.shortDescription}
+          canonical={`${process.env.NEXT_PUBLIC_VERCEL_URL}/post/${post.id}`}
+          openGraph={{
+            type: 'website',
+            url: `${process.env.NEXT_PUBLIC_VERCEL_URL}/post/${post.id}`,
+            title: post.title,
+            description: post.shortDescription,
+            images: [
+              {
+                url: post.imageUrl,
+                width: 800,
+                height: 800,
+                alt: 'Og Blog Artwork',
+                type: 'image/png',
+              },
+            ],
+            siteName: 'Dale Salter Blog',
+          }}
+          twitter={{
+            handle: '@enepture',
+            site: '@enepture',
+            title: post.title,
+            description: post.description,
+            image: post.imageUrl,
+            cardType: 'summary_large_image',
+          }}
+        />
+
         <Header />
 
         <Container>
-          {loading && <CenterSpinner animation="grow" />}
-
-          {!loading && post && (
+          {post && (
             <div>
               <Row key={post.id}>
                 <Col style={{ padding: 10 }}>
@@ -82,5 +147,3 @@ function Post({ router }) {
     </div>
   )
 }
-
-export default withRouter(Post)

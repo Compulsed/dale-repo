@@ -70,6 +70,9 @@ const serverHandler = _.memoize(() => {
 })
 
 const handler = async (event: APIGatewayEvent, context: Context, cb: any): Promise<any> => {
+  // eslint-disable-next-line no-console
+  console.log(JSON.stringify(event, null, 2))
+
   await sdkInit // To run locally, you need to await for SDK start
 
   const response = await tracer.startActiveSpan('handler', { root: true }, async (span: any) => {

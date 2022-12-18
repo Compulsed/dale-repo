@@ -1,8 +1,7 @@
-import React, { useCallback, useState, useEffect } from 'react'
+import React, { useCallback, useState } from 'react'
 import Head from 'next/head'
 import dynamic from 'next/dynamic'
 import { withRouter } from 'next/router'
-import autosize from 'autosize'
 import { useDebouncedCallback } from 'use-debounce'
 
 import { useDropzone } from 'react-dropzone'
@@ -11,7 +10,7 @@ import { Button, Form, Container, Row, Col, Spinner, Badge } from 'react-bootstr
 import { Header } from '../../../../components/layout/header'
 import { Footer } from '../../../../components/layout/footer'
 import { CenterSpinner } from '../../../../components/spinner'
-import { POST_FRAGMENT } from '../../../../libs/fragments'
+import { POST_FRAGMENT } from '../../../../lib/fragments'
 
 import axios from 'axios'
 
@@ -183,7 +182,7 @@ const PostForm = ({ post }) => {
   const [removeAvailableWithLink, { data: removeAvailableWithLinkData, loading: removeAvailableWithLinkLoading }] =
     useMutation(REMOVE_AVAILABLE_WITH_LINK)
 
-  const [debouncedUpdatePost] = useDebouncedCallback(updatePost, 5000)
+  const debouncedUpdatePost = useDebouncedCallback(updatePost, 5000)
 
   const loading =
     updatePostLoading ||
@@ -393,7 +392,6 @@ function Post({ router }) {
   return (
     <div>
       <Head>
-        <title>Dale Salter</title>
         <link rel="icon" href="https://blog-production-image-bucket.s3-accelerate.amazonaws.com/logo-4.png" />
       </Head>
 

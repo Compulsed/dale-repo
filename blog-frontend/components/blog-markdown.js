@@ -1,8 +1,9 @@
-import ReactMarkdown from 'react-markdown/with-html';
+import ReactMarkdown from 'react-markdown'
 import styled from 'styled-components'
+import rehypeRaw from 'rehype-raw'
 
 export const BlogMarkdown = ({ source }) => {
-  return <StyledReactMarkdown escapeHtml={false} source={source} />
+  return <StyledReactMarkdown rehypePlugins={[rehypeRaw]}>{source}</StyledReactMarkdown>
 }
 
 export const StyledReactMarkdown = styled(ReactMarkdown)`

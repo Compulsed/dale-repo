@@ -10,6 +10,7 @@ export const PostCard = ({ post, highlightHover = false, editMode }) => {
       href={!editMode ? '/post/[id]' : '/admin/post/[id]'}
       as={!editMode ? `/post/${post.id}` : `/admin/post/${post.id}`}
       passHref
+      legacyBehavior
     >
       <ArticleLink>
         <ArticleCard highlightHover={highlightHover && post.publishStatus !== 'PUBLISHED'}>
