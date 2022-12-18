@@ -49,6 +49,7 @@ export class DatabaseInfrastructure extends cdk.Stack {
       engine: rds.DatabaseClusterEngine.auroraPostgres({
         version: rds.AuroraPostgresEngineVersion.VER_13_6,
       }),
+      deletionProtection: true,
       instances: 1,
       instanceProps: {
         vpc: vpc,
@@ -60,6 +61,9 @@ export class DatabaseInfrastructure extends cdk.Stack {
           subnetType: SubnetType.PRIVATE_ISOLATED,
         }),
         enablePerformanceInsights: true,
+      },
+      backup: {
+        retention: cdk.Duration.days(30),
       },
       port: 5432,
     })

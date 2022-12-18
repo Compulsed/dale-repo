@@ -36,7 +36,6 @@ export const handler = async (event: APIGatewayEvent, context: Context): Promise
     statusCode: 200,
     body: JSON.stringify({
       message: `DB Response: ${dbResponse}`,
-      secretArn,
     }),
   }
 }

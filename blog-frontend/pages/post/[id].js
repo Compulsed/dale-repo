@@ -49,7 +49,7 @@ export async function getStaticPaths() {
   }))
 
   // { fallback: false } means other routes should 404
-  return { paths, fallback: false }
+  return { paths, fallback: 'blocking' }
 }
 
 export async function getStaticProps(context) {
@@ -65,6 +65,7 @@ export async function getStaticProps(context) {
 
   return {
     props: { post: data.data.post },
+    revalidate: 10,
   }
 }
 
