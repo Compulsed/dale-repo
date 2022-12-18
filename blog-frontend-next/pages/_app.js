@@ -1,5 +1,6 @@
 import { ApolloProvider } from '@apollo/client'
 import { DefaultSeo } from 'next-seo'
+import { GoogleAnalytics } from 'nextjs-google-analytics'
 
 import client from '../lib/apolloClient'
 
@@ -36,6 +37,7 @@ const SEO = {
 function MyApp({ Component, pageProps }) {
   return (
     <ApolloProvider client={client}>
+      <GoogleAnalytics trackPageViews />
       <DefaultSeo {...SEO}></DefaultSeo>
       <Component {...pageProps} />
     </ApolloProvider>
