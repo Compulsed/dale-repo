@@ -34,7 +34,7 @@ export const PostCard = ({ post, highlightHover = false, editMode }) => {
                 {post.updatedAt ? ', last updated ' + moment(post.updatedAt).fromNow(true) + ' ago.' : ''}
               </p>
             </Col>
-            <Col sm={2}>
+            <Col sm={2} style={{ alignSelf: 'center' }}>
               <ArticleImage src={post.imageUrl} />
             </Col>
           </Row>
@@ -45,7 +45,7 @@ export const PostCard = ({ post, highlightHover = false, editMode }) => {
 }
 
 const ArticleImage = styled.img`
-  width: 100%;
+  width: 80%;
 `
 
 const ArticleLink = styled.a`
