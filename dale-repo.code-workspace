@@ -15,10 +15,6 @@
     {
       "name": "🎨 Blog Frontend",
       "path": "./blog-frontend"
-    },
-    {
-      "name": "🔝 Blog Frontend Next",
-      "path": "./blog-frontend-next"
     }
   ],
   "settings": {
