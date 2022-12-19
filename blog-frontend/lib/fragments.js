@@ -5,6 +5,7 @@ export const POST_FRAGMENT = gql`
     id
     title
     shortDescription
+    urlStub
     longDescription
     imageUrl
     body

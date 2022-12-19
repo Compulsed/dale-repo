@@ -17,6 +17,7 @@ const GET_POSTS = gql`
       id
       title
       shortDescription
+      urlStub
       longDescription
       imageUrl
       body

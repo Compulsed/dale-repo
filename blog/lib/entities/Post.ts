@@ -17,6 +17,9 @@ export class Post extends CustomBaseEntity {
   title: string | null
 
   @Property({ type: 'text', nullable: true })
+  urlStub: string | null
+
+  @Property({ type: 'text', nullable: true })
   body: string | null
 
   @Property({ type: 'text', nullable: true })

@@ -6,11 +6,11 @@ TODO
 - ✅ GA Tag
 - ✅ Admin tooling
 - ✅ Sitemap
-- Amazon cognito
 - ✅ Format code blocks for readability
-- Fix created date
+- ✅ Fix created date
+- ✅ Friendly urls
+- Amazon cognito
 - Fix preview urls (I think cache invalidation will break things)
-- Friendly urls
 - Video media for OG
 - Search / tagging posts (admin first)
 - Email lists for people to sub to

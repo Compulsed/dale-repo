@@ -4,15 +4,17 @@ import Disqus from 'disqus-react'
 import { NextSeo } from 'next-seo'
 
 import { Container, Row, Col } from 'react-bootstrap'
-import { Header } from '../../components/layout/header'
-import { Footer } from '../../components/layout/footer'
-import { PostCard } from '../../components/card'
-import { BlogMarkdown } from '../../components/blog-markdown'
+
+import { Header } from '../../../components/layout/header'
+import { Footer } from '../../../components/layout/footer'
+import { PostCard } from '../../../components/card'
+import { BlogMarkdown } from '../../../components/blog-markdown'
 
 const POSTS_QUERY = `
   query QueryPosts {
     posts {
       id
+      urlStub
     }
   }
 `
@@ -22,6 +24,7 @@ const POST_QUERY = `
     post(id: $id) {
       id
       title
+      urlStub
       shortDescription
       longDescription
       imageUrl
@@ -45,10 +48,9 @@ export async function getStaticPaths() {
   const data = await res.json()
 
   const paths = data.data.posts.map((post) => ({
-    params: { id: post.id },
+    params: { id: post.id, 'url-stub': post.urlStub || 'default' },
   }))
 
-  // { fallback: false } means other routes should 404
   return { paths, fallback: 'blocking' }
 }
 

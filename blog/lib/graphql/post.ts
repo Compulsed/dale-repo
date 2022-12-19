@@ -29,6 +29,7 @@ type PostArgs = {
 
 type PostInput = Partial<{
   title: string
+  urlStub: string
   body: string
   shortDescription: string
   longDescription: string
@@ -71,6 +72,8 @@ export const postTypeDefs = `#graphql
     id: ID!
     title: String
     body: String
+    url: String
+    urlStub: String
     shortDescription: String
     longDescription: String
     imageUrl: String
@@ -83,6 +86,7 @@ export const postTypeDefs = `#graphql
   input PostInput {
     title: String
     body: String
+    urlStub: String
     shortDescription: String
     longDescription: String
     imageUrl: String
@@ -115,6 +119,7 @@ export const postTypeDefs = `#graphql
 
 export const postResolvers = {
   Post: {
+    url: ({ urlStub, id }: Post) => `${id}/${urlStub}`,
     createdAt: ({ createdAt }: Post) => createdAt && new Date(createdAt).toISOString(),
     updatedAt: ({ updatedAt }: Post) => updatedAt && new Date(updatedAt).toISOString(),
   },
@@ -215,7 +220,9 @@ export const postResolvers = {
 
       const postRepository = context.em.getRepository(Post)
 
-      const post = await postRepository.upsert(new Post(args.id, args.postInput))
+      const post = await postRepository.findOneOrFail(args.id)
+
+      Object.assign(post, args.postInput)
 
       await postRepository.persistAndFlush(post)
 

@@ -202,6 +202,7 @@ const PostForm = ({ post }) => {
 
     const postInput = {
       title: form.elements.title.value,
+      urlStub: form.elements.urlStub.value,
       imageUrl: form.elements.imageUrl.value,
       shortDescription: form.elements.shortDescription.value,
       longDescription: form.elements.longDescription.value,
@@ -341,6 +342,11 @@ const PostForm = ({ post }) => {
         <Form.Group controlId="title">
           <Form.Label>Title</Form.Label>
           <Form.Control type="text" defaultValue={post.title} />
+        </Form.Group>
+
+        <Form.Group controlId="urlStub">
+          <Form.Label>Url Stub</Form.Label>
+          <Form.Control type="text" defaultValue={post.urlStub} />
         </Form.Group>
 
         <Form.Group controlId="imageUrl">

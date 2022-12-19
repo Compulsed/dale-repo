@@ -17,6 +17,7 @@ const CREATE_POST = gql`
         id
         title
         shortDescription
+        urlStub
         longDescription
         imageUrl
         body
@@ -74,6 +75,7 @@ const defaultFormValues = {
   imageUrl:
     'https://blog-production-image-bucket.s3-accelerate.amazonaws.com/cf720254-751d-432c-bb75-5928594c7bbb-D2099DD1-EEB3-4A55-8D2C-896254DA249C.png',
   shortDescription: 'Lorem Ipsum is simply dummy text of the printing',
+  urlStub: 'default',
   longDescription: 'Lorem Ipsum is simply dummy text of the printing Lorem Ipsum is simply dummy text of the printing',
   body: defaultBodyString,
 }
@@ -98,6 +100,7 @@ const PostForm = () => {
     const postInput = {
       title: form.elements.title.value,
       imageUrl: form.elements.imageUrl.value,
+      urlStub: form.elements.urlStub.value,
       shortDescription: form.elements.shortDescription.value,
       longDescription: form.elements.longDescription.value,
       body: form.elements.body.value,
@@ -113,6 +116,11 @@ const PostForm = () => {
       <Form.Group controlId="title">
         <Form.Label>Title</Form.Label>
         <Form.Control type="text" defaultValue={defaultFormValues.title} />
+      </Form.Group>
+
+      <Form.Group controlId="urlStub">
+        <Form.Label>Url Stub</Form.Label>
+        <Form.Control type="text" defaultValue={defaultFormValues.urlStub} />
       </Form.Group>
 
       <Form.Group controlId="imageUrl">

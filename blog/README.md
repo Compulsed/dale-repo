@@ -4,6 +4,7 @@
 
 - `port-forward`
 - `npx cdk deploy`
+- `npx mikro-orm migration:create` -- Looks at current state of entities and creates any required migrations
 - `npx mikro-orm migration:up` -- Depends on role / secret created from deployment
 
 **Mikro Orm Notes**

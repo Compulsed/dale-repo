@@ -7,8 +7,8 @@ import { Row, Col, Badge } from 'react-bootstrap'
 export const PostCard = ({ post, highlightHover = false, editMode }) => {
   return (
     <Link
-      href={!editMode ? '/post/[id]' : '/admin/post/[id]'}
-      as={!editMode ? `/post/${post.id}` : `/admin/post/${post.id}`}
+      href={!editMode ? '/post/[id]/[url-stub]' : '/admin/post/[id]'}
+      as={!editMode ? `/post/${post.id}/${post.urlStub}` : `/admin/post/${post.id}`}
       passHref
       legacyBehavior
     >

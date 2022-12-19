@@ -42,6 +42,15 @@
           "nullable": true,
           "mappedType": "text"
         },
+        "url_stub": {
+          "name": "url_stub",
+          "type": "text",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": true,
+          "mappedType": "text"
+        },
         "body": {
           "name": "body",
           "type": "text",

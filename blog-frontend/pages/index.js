@@ -12,6 +12,7 @@ const POSTS_QUERY = `
       id
       title
       shortDescription
+      urlStub
       longDescription
       imageUrl
       body
