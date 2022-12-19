@@ -7,6 +7,7 @@ const GET_POSTS = gql`
   query {
     posts {
       id
+      urlStub
       createdAt
     }
   }
@@ -29,7 +30,7 @@ const createSitemap = ({ posts }) => `<?xml version="1.0" encoding="UTF-8"?>
           .map((post) => {
             return `
                     <url>
-                        <loc>${`${EXTERNAL_DATA_URL}/${post.id}`}</loc>
+                        <loc>${`${EXTERNAL_DATA_URL}/${post.id}/${post.urlStub}`}</loc>
                     </url>
                 `
           })
