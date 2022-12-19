@@ -94,10 +94,10 @@ export default function Post({ post }) {
         <NextSeo
           title={post.title}
           description={post.shortDescription}
-          canonical={`${process.env.NEXT_PUBLIC_VERCEL_URL}/post/${post.id}`}
+          canonical={`${process.env.NEXT_PUBLIC_VERCEL_URL}/post/${post.id}/${post.urlStub}`}
           openGraph={{
             type: 'website',
-            url: `${process.env.NEXT_PUBLIC_VERCEL_URL}/post/${post.id}`,
+            url: `${process.env.NEXT_PUBLIC_VERCEL_URL}/post/${post.id}/${post.urlStub}}`,
             title: post.title,
             description: post.shortDescription,
             images: [
