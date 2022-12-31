@@ -9,7 +9,9 @@ import { unwrapResolverError } from '@apollo/server/errors'
 
 // Custom imports
 import { sdkInit, SpanStatusCode, trace, tracer } from './otel'
-import { getEnvironment } from './utils/get-environment'
+import { getEnvironment, getEnvironmentUnsafe } from './utils/get-environment'
+
+import * as Sentry from '@sentry/serverless'
 
 // Resolvers
 import { postResolvers, postTypeDefs } from './graphql/post'
@@ -38,7 +40,15 @@ const serverHandler = _.memoize(() => {
           code: SpanStatusCode.ERROR,
         })
 
-        activeSpan.recordException(unwrapResolverError(error))
+        const resolverError = unwrapResolverError(error)
+
+        activeSpan.recordException(resolverError)
+
+        Sentry.captureException(resolverError, {
+          tags: {
+            mechanism: 'GRAPHQL_RESOLVER',
+          },
+        })
 
         return new GraphQLError('Internal server error 🔥', {
           path: formattedError.path,
@@ -69,32 +79,41 @@ const serverHandler = _.memoize(() => {
   })
 })
 
-const handler = async (event: APIGatewayEvent, context: Context, cb: any): Promise<any> => {
-  // eslint-disable-next-line no-console
-  console.log(JSON.stringify(event, null, 2))
+Sentry.AWSLambda.init({
+  dsn: 'https://7d92c390ee8c4497bb0a14e8b9ad97a1@o4504419291234304.ingest.sentry.io/4504419295559680',
+  tracesSampleRate: 1.0,
+  environment: getEnvironmentUnsafe(['STAGE']).STAGE || 'dev',
+  release: getEnvironmentUnsafe(['RELEASE']).RELEASE,
+})
 
-  await sdkInit // To run locally, you need to await for SDK start
+const handler = Sentry.AWSLambda.wrapHandler(
+  async (event: APIGatewayEvent, context: Context, cb: any): Promise<any> => {
+    // eslint-disable-next-line no-console
+    console.log('event', JSON.stringify(event, null, 2))
 
-  const response = await tracer.startActiveSpan('handler', { root: true }, async (span: any) => {
-    const response = (await serverHandler()(event, context, cb)) as APIGatewayProxyResult
+    await sdkInit // To run locally, you need to await for SDK start
 
-    // TODO: Looks like CORS is meant to be provided by serverless express
-    //    https://www.apollographql.com/docs/apollo-server/deployment/lambda/
-    //  Likely do not need CORS, so we are defining our own headers
-    response['headers'] = Object.assign({}, response['headers'], {
-      'access-control-allow-methods': 'OPTIONS,GET,PUT,POST,DELETE,PATCH,HEAD',
-      'access-control-allow-origin': '*',
-      'access-control-allow-headers':
-        'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token,X-Amz-User-Agent',
-      'access-control-allow-credentials': 'true',
+    const response = await tracer.startActiveSpan('handler', { root: true }, async (span: any) => {
+      const response = (await serverHandler()(event, context, cb)) as APIGatewayProxyResult
+
+      // TODO: Looks like CORS is meant to be provided by serverless express
+      //    https://www.apollographql.com/docs/apollo-server/deployment/lambda/
+      //  Likely do not need CORS, so we are defining our own headers
+      response['headers'] = Object.assign({}, response['headers'], {
+        'access-control-allow-methods': 'OPTIONS,GET,PUT,POST,DELETE,PATCH,HEAD',
+        'access-control-allow-origin': '*',
+        'access-control-allow-headers':
+          'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token,X-Amz-User-Agent',
+        'access-control-allow-credentials': 'true',
+      })
+
+      span.end()
+
+      return response
     })
 
-    span.end()
-
     return response
-  })
-
-  return response
-}
+  }
+)
 
 module.exports = { handler }
