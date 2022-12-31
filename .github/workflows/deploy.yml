@@ -18,7 +18,6 @@ jobs:
       DATABASE_SECRET_ARN: DbClusterSecret9A4B0D5E-u27xQsOk1a4V
       STAGE: prod
       OTEL_SERVICE_NAME: dale-blog-prod
-      RELEASE: ${{ env.GITHUB_RUN_ID }}
       OTEL_EXPORTER_OTLP_ENDPOINT: https://api.honeycomb.io
       OTEL_EXPORTER_OTLP_HEADERS: x-honeycomb-team=${{ secrets.HONEYCOMB_API_KEY }}
     steps:
@@ -50,4 +49,6 @@ jobs:
 
       - name: CDK Deploy
         working-directory: ./blog
+        env:
+          RELEASE: ${{ env.GITHUB_RUN_ID }}
         run: npx cdk deploy --require-approval never
