@@ -6,8 +6,16 @@ export const notFoundError = (entity: string) => {
   })
 }
 
+export const validationError = (errorMessage: string) => {
+  return new GraphQLError(errorMessage, {
+    extensions: {
+      code: 'VALIDATION_ERROR',
+    },
+  })
+}
+
 export const invalidSecretError = () => {
-  throw new GraphQLError('Invalid Secret', {
+  return new GraphQLError('Invalid Secret', {
     extensions: {
       code: 'INVALID_SECRET_ERROR',
     },

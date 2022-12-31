@@ -17,7 +17,7 @@ export default Promise.resolve().then(async () => {
   const cfnResponse = await cloudFormationClient.send(cfnCommand)
 
   const secretArn = (cfnResponse?.Stacks as any)[0].Outputs.find(
-    ({ OutputKey }: any) => OutputKey === 'DatabaseSecretArn'
+    ({ OutputKey }: any) => OutputKey === 'AppDatabaseSecretArn'
   ).OutputValue
 
   const secretCommand = new GetSecretValueCommand({

@@ -36,7 +36,7 @@ export class BlogInfrastructure extends cdk.Stack {
     const databaseName = `blog-${STAGE}`
     const databaseRoleName = `blog-${STAGE}-role`
 
-    const importedSecretArn = cdk.Fn.importValue('DatabaseSecretArn')
+    const importedSecretArn = cdk.Fn.importValue('AdminDatabaseSecretArn')
 
     // TODO: Import from Infra stack?
     const vpc = Vpc.fromLookup(this, 'Vpc', {
@@ -73,7 +73,7 @@ export class BlogInfrastructure extends cdk.Stack {
       owner: dbRole,
     })
 
-    const databaseSecret = dbRole.secret
+    const appDatabaseSecret = dbRole.secret
 
     // DNS
     const zone = PublicHostedZone.fromHostedZoneAttributes(this, 'HostedZone', {
@@ -117,7 +117,7 @@ export class BlogInfrastructure extends cdk.Stack {
       environment: {
         STAGE,
         IMAGE_BUCKET_NAME: imageBucket.bucketName,
-        DATABASE_SECRET_ARN: databaseSecret.secretArn,
+        APP_DATABASE_SECRET_ARN: appDatabaseSecret.secretArn,
         RELEASE,
         // https://github.com/aws-observability/aws-otel-lambda/issues/361
         OTEL_PROPAGATORS: 'tracecontext',
@@ -192,7 +192,7 @@ export class BlogInfrastructure extends cdk.Stack {
       }),
     })
 
-    databaseSecret.grantRead(apiFunction)
+    appDatabaseSecret.grantRead(apiFunction)
 
     imageBucket.grantPut(apiFunction)
 
@@ -218,9 +218,9 @@ export class BlogInfrastructure extends cdk.Stack {
       recordName: recordName,
     })
 
-    new CfnOutput(this, 'DatabaseSecretArn', {
-      exportName: `BlogInfrastructure-${STAGE}-DatabaseSecretArn`,
-      value: databaseSecret.secretArn,
+    new CfnOutput(this, 'AppDatabaseSecretArn', {
+      exportName: `BlogInfrastructure-${STAGE}-AppDatabaseSecretArn`,
+      value: appDatabaseSecret.secretArn,
     })
   }
 }

@@ -15,7 +15,7 @@ jobs:
   release-production:
     runs-on: ubuntu-latest
     env:
-      DATABASE_SECRET_ARN: DbClusterSecret9A4B0D5E-u27xQsOk1a4V
+      ADMIN_DATABASE_SECRET_ARN: DbClusterSecret9A4B0D5E-u27xQsOk1a4V
       STAGE: prod
       OTEL_SERVICE_NAME: dale-blog-prod
       OTEL_EXPORTER_OTLP_ENDPOINT: https://api.honeycomb.io

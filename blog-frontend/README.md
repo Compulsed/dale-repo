@@ -18,6 +18,7 @@ TODO
 - Clean Apollo code
 - Check search console for results
 - Google analytics v4
-- Sentry
+- ✅ Sentry
+  - Source maps
 - Retool
 - GTM codes

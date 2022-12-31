@@ -1,4 +1,6 @@
 import { GraphQLError } from 'graphql'
+import * as Sentry from '@sentry/serverless'
+
 import { SpanStatusCode, trace } from '../otel'
 import { LambdaContext } from '../graphql-types'
 
@@ -8,6 +10,7 @@ export const commonTypeDefs = `#graphql
     rawError: String
     clientError: String
     graphQLError: String
+    sentryError: String
   }
 `
 
@@ -23,6 +26,12 @@ export const commonResolvers = {
           code: 'CLIENT_ERROR',
         },
       })
+    },
+
+    sentryError: () => {
+      Sentry.captureException(new Error('Custom Sentry Error'))
+
+      return 'Error sent'
     },
 
     graphQLError: () => {

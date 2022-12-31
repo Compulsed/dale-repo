@@ -1,6 +1,24 @@
 const handler = require('./blog-infrastructure-lambda.function')
 
 ;(async () => {
+  const query = `
+    query($postId: ID!) {
+      post(id: $postId) {
+        id
+      }
+    }
+  `
+
+  const variables = {
+    postId: 'aaa',
+  }
+
+  const body = {
+    query,
+    variables,
+    operationName: null,
+  }
+
   const event: any = {
     httpMethod: 'POST',
     path: '/',
@@ -8,14 +26,14 @@ const handler = require('./blog-infrastructure-lambda.function')
       'content-type': 'application/json',
     },
     requestContext: {},
-    body: '{"operationName": null, "variables": null, "query": "{ posts { id } }"}',
+    body: JSON.stringify(body),
   }
 
   const context: any = {}
 
   const cb: any = {}
 
-  const response = await handler(event, context, cb)
+  const response = await handler.handler(event, context, cb)
 
   // eslint-disable-next-line no-console
   console.log(response)

@@ -52,6 +52,8 @@ Setup:
 - ✅ Break down main handler class
 - ✅ Consider using 'internal' / 'client' errors to mask unknown errors in production
 - ✅ Database roles https://constructs.dev/packages/cdk-rds-sql/v/2.0.0?lang=typescript
+- Fix environment variables
+  - .env's APP_DATABASE_SECRET_ARN is only available once the infra stack is run, can we pull this from the lambda environment variables? This is true of other values like the bucket name.
 - Custom function for spans (with error setting for proper errors)
 - Graph Resolver Caching
 - Lambda init time tracing

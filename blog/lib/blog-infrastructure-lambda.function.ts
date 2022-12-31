@@ -19,6 +19,10 @@ import { commonResolvers, commonTypeDefs } from './graphql/common'
 import { getOrm } from './orm-config'
 import { GraphQLError } from 'graphql'
 
+const isGraphQLError = (error: unknown) => {
+  return unwrapResolverError(error) instanceof GraphQLError
+}
+
 // ApolloServer generates `graphql.parseSchema` spans. To ensure they're captured
 //  in Hny, initialize in the lambda handler, & cache for subsequent requests
 const serverHandler = _.memoize(() => {
@@ -29,11 +33,8 @@ const serverHandler = _.memoize(() => {
     resolvers: mergeResolvers([commonResolvers, postResolvers]),
     includeStacktraceInErrorResponses: STAGE !== 'prod',
     formatError: (formattedError, error) => {
-      // Capture uncaught exceptions / INTERNAL_SERVER_ERROR as errors in HNY for alerting
-      if (
-        !(unwrapResolverError(error) instanceof GraphQLError) ||
-        formattedError.extensions?.code === 'INTERNAL_SERVER_ERROR'
-      ) {
+      // Treat GraphQL Errors as 'validation' or 'handled' errors, unless they're marked as Internal errors
+      if (!isGraphQLError(error) || formattedError?.extensions?.code === 'INTERNAL_SERVER_ERROR') {
         const activeSpan = trace.getActiveSpan()
 
         activeSpan.setStatus({
@@ -44,12 +45,9 @@ const serverHandler = _.memoize(() => {
 
         activeSpan.recordException(resolverError)
 
-        Sentry.captureException(resolverError, {
-          tags: {
-            mechanism: 'GRAPHQL_RESOLVER',
-          },
-        })
+        Sentry.captureException(resolverError)
 
+        // Return unhandled / unexpected errors as internal
         return new GraphQLError('Internal server error 🔥', {
           path: formattedError.path,
           extensions: formattedError.extensions,
@@ -113,7 +111,8 @@ const handler = Sentry.AWSLambda.wrapHandler(
     })
 
     return response
-  }
+  },
+  { captureTimeoutWarning: true }
 )
 
 module.exports = { handler }

@@ -1,5 +1,5 @@
 import _ from 'lodash'
-import { v4 } from 'uuid'
+import { v4, validate } from 'uuid'
 import { PutObjectCommand, S3Client } from '@aws-sdk/client-s3'
 
 // Custom imports
@@ -8,7 +8,7 @@ import { getEnvironment } from '../utils/get-environment'
 import { QueryOrder } from '@mikro-orm/core'
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner'
 import { LambdaContext } from '../graphql-types'
-import { invalidSecretError } from '../errors'
+import { invalidSecretError, validationError } from '../errors'
 
 type CreatePostArgs = {
   id?: string
@@ -126,6 +126,10 @@ export const postResolvers = {
 
   Query: {
     post: (_: any, { id }: { id: string }, context: LambdaContext): Promise<Post> => {
+      if (!validate(id)) {
+        throw validationError('ID Format is not valid')
+      }
+
       const postRepository = context.em.getRepository(Post)
 
       return postRepository.findOneOrFail({
@@ -147,7 +151,7 @@ export const postResolvers = {
 
     editorPost: (_: any, { id, secret }: any, context: LambdaContext): Promise<Post> => {
       if (!isSecret(secret)) {
-        invalidSecretError()
+        throw invalidSecretError()
       }
 
       const postRepository = context.em.getRepository(Post)
@@ -160,7 +164,7 @@ export const postResolvers = {
 
     editorPosts: (_: any, { secret }: any, context: LambdaContext): Promise<Post[]> => {
       if (!isSecret(secret)) {
-        invalidSecretError()
+        throw invalidSecretError()
       }
 
       const postRepository = context.em.getRepository(Post)
@@ -170,7 +174,7 @@ export const postResolvers = {
 
     editorSignedUrl: async (_: any, { fileName, contentType, secret }: any) => {
       if (!isSecret(secret)) {
-        invalidSecretError()
+        throw invalidSecretError()
       }
 
       const { IMAGE_BUCKET_NAME } = getEnvironment(['IMAGE_BUCKET_NAME'])
