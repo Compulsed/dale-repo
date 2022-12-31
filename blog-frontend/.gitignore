@@ -1,2 +1,5 @@
 .vercel
 .next
+
+# Sentry
+.sentryclirc

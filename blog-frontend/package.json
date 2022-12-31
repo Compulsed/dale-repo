@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@apollo/client": "^3.7.1",
+    "@sentry/nextjs": "^7.28.1",
     "autosize": "^5.0.2",
     "axios": "^1.2.1",
     "bootstrap": "^5.2.3",
