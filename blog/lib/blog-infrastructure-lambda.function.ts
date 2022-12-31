@@ -82,7 +82,7 @@ const serverHandler = _.memoize(() => {
 Sentry.AWSLambda.init({
   dsn: 'https://7d92c390ee8c4497bb0a14e8b9ad97a1@o4504419291234304.ingest.sentry.io/4504419295559680',
   tracesSampleRate: 1.0,
-  environment: getEnvironmentUnsafe(['STAGE']).STAGE || 'dev',
+  environment: getEnvironment(['STAGE']).STAGE,
   release: getEnvironmentUnsafe(['RELEASE']).RELEASE,
 })
 

@@ -7,7 +7,7 @@ import { SubnetType, Vpc } from 'aws-cdk-lib/aws-ec2'
 import { ARecord, PublicHostedZone, RecordTarget } from 'aws-cdk-lib/aws-route53'
 import * as secretsManager from 'aws-cdk-lib/aws-secretsmanager'
 import { CfnOutput, Duration } from 'aws-cdk-lib'
-import { getEnvironment } from './utils/get-environment'
+import { getEnvironment, getEnvironmentUnsafe } from './utils/get-environment'
 import { Certificate, CertificateValidation } from 'aws-cdk-lib/aws-certificatemanager'
 import { ApiGateway } from 'aws-cdk-lib/aws-route53-targets'
 import { Bucket, BucketAccessControl, HttpMethods } from 'aws-cdk-lib/aws-s3'
@@ -21,6 +21,8 @@ const { STAGE, OTEL_EXPORTER_OTLP_ENDPOINT, OTEL_EXPORTER_OTLP_HEADERS, OTEL_SER
   'OTEL_EXPORTER_OTLP_HEADERS',
   'OTEL_SERVICE_NAME',
 ])
+
+const { RELEASE } = getEnvironmentUnsafe(['RELEASE'])
 
 export class BlogInfrastructure extends cdk.Stack {
   constructor(scope: Construct, id: string, props?: cdk.StackProps) {
@@ -116,6 +118,7 @@ export class BlogInfrastructure extends cdk.Stack {
         STAGE,
         IMAGE_BUCKET_NAME: imageBucket.bucketName,
         DATABASE_SECRET_ARN: databaseSecret.secretArn,
+        RELEASE,
         // https://github.com/aws-observability/aws-otel-lambda/issues/361
         OTEL_PROPAGATORS: 'tracecontext',
         OTEL_EXPORTER_OTLP_ENDPOINT,
