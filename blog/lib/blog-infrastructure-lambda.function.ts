@@ -7,17 +7,24 @@ import { startServerAndCreateLambdaHandler } from '@as-integrations/aws-lambda'
 import { mergeResolvers, mergeTypeDefs } from '@graphql-tools/merge'
 import { unwrapResolverError } from '@apollo/server/errors'
 
-import Sentry from '@sentry/serverless'
-
 // Custom imports
 import { sdkInit, SpanStatusCode, trace, tracer } from './otel'
 import { getEnvironment, getEnvironmentUnsafe } from './utils/get-environment'
+
+const Sentry = require('@sentry/serverless')
 
 // Resolvers
 import { postResolvers, postTypeDefs } from './graphql/post'
 import { commonResolvers, commonTypeDefs } from './graphql/common'
 import { getOrm } from './orm-config'
 import { GraphQLError } from 'graphql'
+
+Sentry.AWSLambda.init({
+  dsn: 'https://7d92c390ee8c4497bb0a14e8b9ad97a1@o4504419291234304.ingest.sentry.io/4504419295559680',
+  tracesSampleRate: 1.0,
+  environment: getEnvironmentUnsafe(['STAGE']).STAGE || 'dev',
+  release: getEnvironmentUnsafe(['RELEASE']).RELEASE,
+})
 
 // ApolloServer generates `graphql.parseSchema` spans. To ensure they're captured
 //  in Hny, initialize in the lambda handler, & cache for subsequent requests
@@ -77,13 +84,6 @@ const serverHandler = _.memoize(() => {
       }
     },
   })
-})
-
-Sentry.AWSLambda.init({
-  dsn: 'https://7d92c390ee8c4497bb0a14e8b9ad97a1@o4504419291234304.ingest.sentry.io/4504419295559680',
-  tracesSampleRate: 1.0,
-  environment: getEnvironmentUnsafe(['STAGE']).STAGE || 'dev',
-  release: getEnvironmentUnsafe(['RELEASE']).RELEASE,
 })
 
 const handler = Sentry.AWSLambda.wrapHandler(
