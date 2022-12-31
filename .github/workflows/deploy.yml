@@ -52,5 +52,5 @@ jobs:
       - name: CDK Deploy
         working-directory: ./blog
         env:
-          RELEASE: ${{ env.GITHUB_RUN_ID }}
+          RELEASE: ${GITHUB_RUN_ID}
         run: npx cdk deploy --require-approval never
