@@ -25,7 +25,17 @@
     "editor.formatOnSave": true,
     "explorer.autoRevealExclude": {
       "**/node_modules": true
-    }
+    },
+    "cSpell.words": [
+      "certificatemanager",
+      "dalejsalter",
+      "esbuild",
+      "mikro",
+      "mikroorm",
+      "opentelemetry",
+      "OTEL",
+      "OTLP"
+    ]
   },
   "extensions": {
     "recommendations": ["streetsidesoftware.code-spell-checker", "esbenp.prettier-vscode", "dbaeumer.vscode-eslint"]
