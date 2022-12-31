@@ -30,16 +30,16 @@ jobs:
           cache: 'npm'
           cache-dependency-path: blog/package-lock.json
 
+      - name: Install dependencies
+        working-directory: ./blog
+        run: npm ci
+
       - name: Configure AWS Credentials Account
         uses: aws-actions/configure-aws-credentials@master
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: 'us-east-1'
-
-      - name: Install dependencies
-        working-directory: ./blog
-        run: npm ci
 
       - name: Port forward
         working-directory: ./
@@ -52,5 +52,5 @@ jobs:
       - name: CDK Deploy
         working-directory: ./blog
         env:
-          RELEASE: ${{GITHUB_RUN_ID}}
+          RELEASE: ${{ github.run_id }}
         run: npx cdk deploy --require-approval never
