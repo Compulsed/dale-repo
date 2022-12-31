@@ -45,9 +45,9 @@ jobs:
         working-directory: ./
         run: ./bin/port-forward
 
-      # - name: Up Script
-      #   working-directory: ./blog
-      #   run: npx mikro-orm migration:up
+      - name: Up Script
+        working-directory: ./blog
+        run: npx mikro-orm migration:up
 
       - name: CDK Deploy
         working-directory: ./blog
