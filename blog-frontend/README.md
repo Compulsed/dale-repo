@@ -9,6 +9,8 @@ TODO
 - ✅ Format code blocks for readability
 - ✅ Fix created date
 - ✅ Friendly urls
+- ✅ Backend Sentry
+- ✅ Frontend Sentry
 - Amazon cognito
 - Fix preview urls (I think cache invalidation will break things)
 - Video media for OG
@@ -18,7 +20,6 @@ TODO
 - Clean Apollo code
 - Check search console for results
 - Google analytics v4
-- ✅ Sentry
-  - Source maps
+- Backend Source maps
 - Retool
 - GTM codes
