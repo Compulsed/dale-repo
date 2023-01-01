@@ -3,7 +3,7 @@ module.exports = {
   siteUrl: process.env.NEXT_PUBLIC_VERCEL_URL,
   generateRobotsTxt: true,
   transform: async (config, path) => {
-    if (path.startsWith(`${process.env.NEXT_PUBLIC_VERCEL_URL}/admin`)) {
+    if (path.includes(`${process.env.NEXT_PUBLIC_VERCEL_URL}/admin`)) {
       return null
     }
 
