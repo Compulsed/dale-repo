@@ -1,2 +1,9 @@
+# *
 User-agent: *
-Sitemap: https://dalejsalter.com/sitemap.xml
+Allow: /
+
+# Host
+Host: http://localhost:3000
+
+# Sitemaps
+Sitemap: http://localhost:3000/sitemap.xml

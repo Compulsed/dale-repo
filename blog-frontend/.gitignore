@@ -3,3 +3,8 @@
 
 # Sentry
 .sentryclirc
+
+# Generated via sitemap plugin
+public/robots.txt
+public/sitemap-0.xml
+public/sitemap.xml
