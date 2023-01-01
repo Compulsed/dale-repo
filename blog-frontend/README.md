@@ -11,12 +11,12 @@ TODO
 - ✅ Friendly urls
 - ✅ Backend Sentry
 - ✅ Frontend Sentry
+- ✅ About me page
 - Amazon cognito
 - Fix preview urls (I think cache invalidation will break things)
 - Video media for OG
 - Search / tagging posts (admin first)
 - Email lists for people to sub to
-- About me page
 - Clean Apollo code
 - Check search console for results
 - Google analytics v4
