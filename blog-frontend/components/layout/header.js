@@ -35,7 +35,7 @@ export const Header = () => {
                 </TitleLink>
               </Link>
               <span style={{ display: 'inline-block', position: 'relative', top: -2 }}>
-                <a href="https://twitter.com/home" rel="noopener noreferrer" target="_blank">
+                <a href="https://twitter.com/enepture" rel="noopener noreferrer" target="_blank">
                   <SocialIcon>
                     <FaTwitterSquare />
                   </SocialIcon>
