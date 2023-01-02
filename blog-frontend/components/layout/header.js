@@ -8,7 +8,7 @@ export const Header = () => {
   return (
     <SpacedContainer>
       <Row>
-        <Col style={{ flex: '0 0 50px', padding: 0 }}>
+        <Col style={{ flex: '0 0 50px', padding: 0, justifyContent: 'center' }}>
           <Link href="/" as="/" passHref legacyBehavior>
             <a>
               <img
@@ -18,7 +18,7 @@ export const Header = () => {
             </a>
           </Link>
         </Col>
-        <Col xs={8}>
+        <Col md={8}>
           <Link href="/" as="/" passHref legacyBehavior>
             <TitleLink>
               <Title>Dale Salter</Title>
@@ -31,7 +31,7 @@ export const Header = () => {
             <p className="mb-0">
               <Link href="/about" as="/about" passHref legacyBehavior>
                 <TitleLink>
-                  <span style={{ marginRight: 12 }}>About</span>
+                  <span style={{ marginRight: 12 }}>About Me</span>
                 </TitleLink>
               </Link>
               <span style={{ display: 'inline-block', position: 'relative', top: -2 }}>
@@ -88,9 +88,11 @@ const SocialBar = styled.div`
 
   justify-content: flex-end;
 
-  @media (max-width: 404px) {
+  @media (max-width: 768px) {
     margin-top: 20px;
     justify-content: center;
+    border-bottom: 1px solid #e3e3e3;
+    padding-bottom: 20px;
   }
 `
 
