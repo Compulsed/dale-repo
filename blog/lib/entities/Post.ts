@@ -1,5 +1,6 @@
-import { Property, Entity } from '@mikro-orm/core'
+import { Property, Entity, ManyToMany, Collection } from '@mikro-orm/core'
 import { CustomBaseEntity } from './CustomBaseEntity'
+import { Tag } from './Tag'
 
 @Entity()
 export class Post extends CustomBaseEntity {
@@ -36,4 +37,7 @@ export class Post extends CustomBaseEntity {
 
   @Property({ type: 'boolean', nullable: true })
   availableWithLink: boolean | null
+
+  @ManyToMany({ entity: 'Tag', fixedOrder: true })
+  tags = new Collection<Tag>(this)
 }

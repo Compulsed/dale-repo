@@ -17,9 +17,9 @@ export const PostCard = ({ post, highlightHover = false, editMode }) => {
           {(editMode || post.publishStatus !== 'PUBLISHED') && (
             <Row>
               <Col sm={10}>
-                {post.publishStatus === 'DRAFT' && <Badge variant="light">DRAFT</Badge>}
-                {post.publishStatus === 'HIDDEN' && <Badge variant="dark">HIDDEN</Badge>}
-                {post.publishStatus === 'PUBLISHED' && <Badge variant="primary">PUBLISHED</Badge>}
+                {post.publishStatus === 'DRAFT' && <Badge bg="secondary">DRAFT</Badge>}
+                {post.publishStatus === 'HIDDEN' && <Badge bg="dark">HIDDEN</Badge>}
+                {post.publishStatus === 'PUBLISHED' && <Badge bg="primary">PUBLISHED</Badge>}
               </Col>
             </Row>
           )}
@@ -33,8 +33,15 @@ export const PostCard = ({ post, highlightHover = false, editMode }) => {
                 Posted {moment(post.createdAt).fromNow(true)} ago
                 {post.updatedAt ? ', last updated ' + moment(post.updatedAt).fromNow(true) + ' ago.' : ''}
               </p>
+              <p>
+                {post.tags.map(({ name }) => (
+                  <Badge key={name} bg="light" text="dark">
+                    {name}
+                  </Badge>
+                ))}
+              </p>
             </Col>
-            <Col sm={2} style={{ alignSelf: 'center' }}>
+            <Col sm={2} style={{ display: 'flex', justifyContent: 'center', alignSelf: 'center' }}>
               <ArticleImage src={post.imageUrl} />
             </Col>
           </Row>
@@ -46,6 +53,7 @@ export const PostCard = ({ post, highlightHover = false, editMode }) => {
 
 const ArticleImage = styled.img`
   width: 80%;
+  max-width: 200px;
 `
 
 const ArticleLink = styled.a`

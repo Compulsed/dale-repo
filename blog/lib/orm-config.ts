@@ -5,6 +5,7 @@ import { MikroORM, Options, PostgreSqlDriver } from '@mikro-orm/postgresql'
 
 import { tracer } from './otel'
 import { Post } from './entities/Post'
+import { Tag } from './entities/Tag'
 import { notFoundError } from './errors'
 
 export const getOrmConfig = (config: Options) => {
@@ -22,7 +23,7 @@ export const getOrmConfig = (config: Options) => {
       disableForeignKeys: false,
     },
 
-    entities: [Post],
+    entities: [Post, Tag],
   }
 
   return { ...config, ...sharedConfig }

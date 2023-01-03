@@ -78,7 +78,7 @@ const TitleLink = styled.a`
 
 const SpacedContainer = styled(Container)`
   margin-top: 30px;
-  margin-bottom: 30px;
+  margin-bottom: 20px;
 `
 
 const SocialBar = styled.div`
@@ -89,10 +89,7 @@ const SocialBar = styled.div`
   justify-content: flex-end;
 
   @media (max-width: 768px) {
-    margin-top: 20px;
-    justify-content: center;
-    border-bottom: 1px solid #e3e3e3;
-    padding-bottom: 20px;
+    justify-content: start;
   }
 `
 

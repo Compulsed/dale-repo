@@ -31,6 +31,10 @@ const POST_QUERY = `
       body
       createdAt
       updatedAt
+      tags {
+        id
+        name
+      }
     }
   }
 `

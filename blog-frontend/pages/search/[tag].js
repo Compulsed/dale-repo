@@ -2,13 +2,13 @@ import Head from 'next/head'
 
 import { Container, Row, Col } from 'react-bootstrap'
 
-import { Header } from '../components/layout/header'
-import { Footer } from '../components/layout/footer'
-import { PostCard } from '../components/card'
-import { SearchHeader } from '../components/search-header'
+import { Header } from '../../components/layout/header'
+import { Footer } from '../../components/layout/footer'
+import { PostCard } from '../../components/card'
+import { SearchHeader } from '../../components/search-header'
 
 const POSTS_QUERY = `
-  query QueryPosts {
+  query QueryPosts ($tags: [String!]) {
     tags {
       id
       name
@@ -16,7 +16,7 @@ const POSTS_QUERY = `
         id
       }
     }
-    posts {
+    posts(tags: $tags) {
       id
       title
       shortDescription
@@ -34,11 +34,32 @@ const POSTS_QUERY = `
   }
 `
 
-export async function getStaticProps() {
-  // TODO Use apollo client
+export async function getStaticPaths() {
   const res = await fetch(process.env.NEXT_PUBLIC_API_URL, {
     method: 'POST',
-    body: JSON.stringify({ query: POSTS_QUERY, variables: {} }, null, 2),
+    body: JSON.stringify({ query: POSTS_QUERY }, null, 2),
+    headers: {
+      'Content-Type': 'application/json',
+    },
+  })
+
+  const data = await res.json()
+
+  const paths = data.data.tags.map((tag) => ({
+    params: { tag: tag.name },
+  }))
+
+  return { paths, fallback: 'blocking' }
+}
+
+export async function getStaticProps(context) {
+  const res = await fetch(process.env.NEXT_PUBLIC_API_URL, {
+    method: 'POST',
+    body: JSON.stringify(
+      { query: POSTS_QUERY, variables: { tags: context.params.tag ? [context.params.tag] : null } },
+      null,
+      2
+    ),
     headers: {
       'Content-Type': 'application/json',
     },
@@ -47,12 +68,12 @@ export async function getStaticProps() {
   const data = await res.json()
 
   return {
-    props: { posts: data.data.posts, tags: data.data.tags },
+    props: { posts: data.data.posts, tags: data.data.tags, selectedTag: context.params.tag },
     revalidate: 10,
   }
 }
 
-export default function Home({ posts, tags }) {
+export default function Home({ posts, tags, selectedTag }) {
   return (
     <div>
       <Head>
@@ -62,7 +83,7 @@ export default function Home({ posts, tags }) {
       <main>
         <Header />
 
-        <SearchHeader tags={tags} />
+        <SearchHeader tags={tags} selectedTag={selectedTag} />
 
         <Container>
           {(posts || []).map((post) => {

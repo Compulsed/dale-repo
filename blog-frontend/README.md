@@ -12,10 +12,10 @@ TODO
 - ✅ Backend Sentry
 - ✅ Frontend Sentry
 - ✅ About me page
+- Search / tagging posts (admin first)
 - Amazon cognito
 - Fix preview urls (I think cache invalidation will break things)
 - Video media for OG
-- Search / tagging posts (admin first)
 - Email lists for people to sub to
 - Clean Apollo code
 - Check search console for results

@@ -119,6 +119,131 @@
       ],
       "checks": [],
       "foreignKeys": {}
+    },
+    {
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "mappedType": "uuid"
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamptz(0)",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "length": 6,
+          "mappedType": "datetime"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamptz(0)",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": true,
+          "length": 6,
+          "mappedType": "datetime"
+        },
+        "name": {
+          "name": "name",
+          "type": "text",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "mappedType": "text"
+        }
+      },
+      "name": "tag",
+      "schema": "public",
+      "indexes": [
+        {
+          "columnNames": ["name"],
+          "composite": false,
+          "keyName": "tag_name_unique",
+          "primary": false,
+          "unique": true
+        },
+        {
+          "keyName": "tag_pkey",
+          "columnNames": ["id"],
+          "composite": false,
+          "primary": true,
+          "unique": true
+        }
+      ],
+      "checks": [],
+      "foreignKeys": {}
+    },
+    {
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "serial",
+          "unsigned": true,
+          "autoincrement": true,
+          "primary": true,
+          "nullable": false,
+          "mappedType": "integer"
+        },
+        "post_id": {
+          "name": "post_id",
+          "type": "uuid",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "mappedType": "uuid"
+        },
+        "tag_id": {
+          "name": "tag_id",
+          "type": "uuid",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "mappedType": "uuid"
+        }
+      },
+      "name": "post_tags",
+      "schema": "public",
+      "indexes": [
+        {
+          "keyName": "post_tags_pkey",
+          "columnNames": ["id"],
+          "composite": false,
+          "primary": true,
+          "unique": true
+        }
+      ],
+      "checks": [],
+      "foreignKeys": {
+        "post_tags_post_id_foreign": {
+          "constraintName": "post_tags_post_id_foreign",
+          "columnNames": ["post_id"],
+          "localTableName": "public.post_tags",
+          "referencedColumnNames": ["id"],
+          "referencedTableName": "public.post",
+          "deleteRule": "cascade",
+          "updateRule": "cascade"
+        },
+        "post_tags_tag_id_foreign": {
+          "constraintName": "post_tags_tag_id_foreign",
+          "columnNames": ["tag_id"],
+          "localTableName": "public.post_tags",
+          "referencedColumnNames": ["id"],
+          "referencedTableName": "public.tag",
+          "deleteRule": "cascade",
+          "updateRule": "cascade"
+        }
+      }
     }
   ]
 }

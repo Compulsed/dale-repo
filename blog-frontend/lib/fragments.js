@@ -13,5 +13,9 @@ export const POST_FRAGMENT = gql`
     updatedAt
     publishStatus
     availableWithLink
+    tags {
+      id
+      name
+    }
   }
 `
