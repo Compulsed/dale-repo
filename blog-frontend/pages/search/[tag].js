@@ -1,6 +1,7 @@
 import Head from 'next/head'
 
 import { Container, Row, Col } from 'react-bootstrap'
+import { NextSeo } from 'next-seo'
 
 import { Header } from '../../components/layout/header'
 import { Footer } from '../../components/layout/footer'
