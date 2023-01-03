@@ -21,7 +21,7 @@ I live in a tiny apartment amongst the chaotic and messy streets of the city, it
 I started my journey in Melbourne, Australia 🇦🇺. In 2015, I was lucky enough to join a fast-growing start-up [A Cloud Guru](https://acloudguru.com)
 as the first employee. A Cloud Guru went from one person to over 600 in 4 years. I (and eventually my team) worked on what
 I think to be some of the most interesting/critical parts of the platform, such as; video delivery & transcoding, course management,
-billing & subscription, content search, video transcoding, etc. 
+billing & subscription, content search, video transcriptions, etc. 
 
 After around 4 years of working within / leading a product team, I wanted to try something different; this is when I moved to Austin, Texas
  and started leading the DevOps team. The purpose of this team was to provide the 19 product teams with best practices; these were made available through

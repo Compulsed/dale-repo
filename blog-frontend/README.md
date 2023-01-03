@@ -12,7 +12,9 @@ TODO
 - ✅ Backend Sentry
 - ✅ Frontend Sentry
 - ✅ About me page
-- Search / tagging posts (admin first)
+- ✅ Search / tagging posts (admin first)
+- ✅ Retool
+- Add server side generated sitemaps
 - Amazon cognito
 - Fix preview urls (I think cache invalidation will break things)
 - Video media for OG
@@ -21,5 +23,4 @@ TODO
 - Check search console for results
 - Google analytics v4
 - Backend Source maps
-- Retool
 - GTM codes
