@@ -3,10 +3,11 @@ import Head from 'next/head'
 import dynamic from 'next/dynamic'
 import { withRouter } from 'next/router'
 import { useDebouncedCallback } from 'use-debounce'
-
+import Select from 'react-select'
 import { useDropzone } from 'react-dropzone'
 import { gql, useQuery, useMutation, useApolloClient } from '@apollo/client'
 import { Button, Form, Container, Row, Col, Spinner, Badge } from 'react-bootstrap'
+
 import { Header } from '../../../../components/layout/header'
 import { Footer } from '../../../../components/layout/footer'
 import { CenterSpinner } from '../../../../components/spinner'
@@ -24,6 +25,10 @@ const GET_POST = gql`
   query ($id: ID!, $secret: String!) {
     editorPost(id: $id, secret: $secret) {
       ...PostParts
+    }
+    tags {
+      id
+      name
     }
   }
 
@@ -111,6 +116,45 @@ const REMOVE_AVAILABLE_WITH_LINK = gql`
   ${POST_FRAGMENT}
 `
 
+const CREATE_TAG = gql`
+  mutation ($name: String!) {
+    createTag(name: $name) {
+      name
+    }
+  }
+`
+
+const onSubmitHandle = (e, createTag) => {
+  e.preventDefault()
+  e.stopPropagation()
+
+  const tag = e.currentTarget.elements.tag.value
+
+  createTag({ variables: { name: tag } })
+}
+
+const TagCreator = () => {
+  const [createTag, { data, loading }] = useMutation(CREATE_TAG)
+
+  return (
+    <Form onSubmit={(e) => onSubmitHandle(e, createTag)}>
+      <Form.Group controlId="tag">
+        <Form.Label>Tag</Form.Label>
+        <Form.Control type="text" />
+      </Form.Group>
+
+      <div>
+        <Button className="mt-3" variant="dark" type="submit">
+          {!loading ? 'Create Tag' : <Spinner size="sm" animation="border" variant="light" />}
+        </Button>
+        <span style={{ marginLeft: 5 }}>
+          {data?.createTag?.name && 'Successfully Created Tag: ' + data?.createTag?.name}
+        </span>
+      </div>
+    </Form>
+  )
+}
+
 const ImageUploader = () => {
   const client = useApolloClient()
   const [files, setFiles] = useState([])
@@ -164,7 +208,7 @@ const ImageUploader = () => {
       </Container>
 
       <Button variant="dark" disabled={updateState} onClick={onUpload}>
-        Submit
+        Upload Image
       </Button>
 
       <span className="ml-2">{uploadUrl}</span>
@@ -172,7 +216,7 @@ const ImageUploader = () => {
   )
 }
 
-const PostForm = ({ post }) => {
+const PostForm = ({ post, tags }) => {
   const [updatePost, { data: updatePostData, loading: updatePostLoading }] = useMutation(UPDATE_POST)
   const [hidePost, { data: hidePostData, loading: hidePostloading }] = useMutation(HIDE_POST)
   const [unhidePost, { data: unhidePostData, loading: unhidePostloading }] = useMutation(UNHIDE_POST)
@@ -200,6 +244,17 @@ const PostForm = ({ post }) => {
 
     const id = post.id
 
+    let tags = []
+
+    // The multi-select API is super wack. We must handle the three cases (no items, 1 item, multiple items differently)
+    if (form.elements.tags) {
+      if (form.elements.tags.length) {
+        tags = Array.from(form.elements.tags)
+      } else {
+        tags = [form.elements.tags]
+      }
+    }
+
     const postInput = {
       title: form.elements.title.value,
       urlStub: form.elements.urlStub.value,
@@ -207,6 +262,7 @@ const PostForm = ({ post }) => {
       shortDescription: form.elements.shortDescription.value,
       longDescription: form.elements.longDescription.value,
       body: form.elements.body.value,
+      tags: tags.map((item) => item.value),
     }
 
     const secret = localStorage.getItem('_password')
@@ -339,29 +395,47 @@ const PostForm = ({ post }) => {
         onSubmit={(e) => handleFormAction('submit', e)}
         onChange={(e) => handleFormAction('change', e)}
       >
-        <Form.Group controlId="title">
+        <Form.Group className="mb-2" controlId="title">
           <Form.Label>Title</Form.Label>
           <Form.Control type="text" defaultValue={post.title} />
         </Form.Group>
 
-        <Form.Group controlId="urlStub">
+        <Form.Group className="mb-2" controlId="urlStub">
           <Form.Label>Url Stub</Form.Label>
           <Form.Control type="text" defaultValue={post.urlStub} />
         </Form.Group>
 
-        <Form.Group controlId="imageUrl">
+        <Form.Group className="mb-2" controlId="imageUrl">
           <Form.Label>Image URL</Form.Label>
           <Form.Control type="text" defaultValue={post.imageUrl} />
         </Form.Group>
 
-        <Form.Group controlId="shortDescription">
+        <Form.Group className="mb-2" controlId="shortDescription">
           <Form.Label>Short Description</Form.Label>
           <Form.Control as="textarea" rows="1" defaultValue={post.shortDescription} />
         </Form.Group>
 
-        <Form.Group className="mb-5" controlId="longDescription">
+        <Form.Group className="mb-2" controlId="longDescription">
           <Form.Label>Long Description</Form.Label>
           <Form.Control as="textarea" rows="3" defaultValue={post.longDescription} />
+        </Form.Group>
+
+        <Form.Group className="mb-5" controlId="tags">
+          <Form.Label>Tags</Form.Label>
+          <Select
+            defaultValue={post.tags.map(({ id, name }) => ({
+              label: name,
+              value: name,
+            }))}
+            isMulti
+            name="tags"
+            options={tags.map(({ id, name }) => ({
+              label: name,
+              value: name,
+            }))}
+            className="basic-multi-select"
+            classNamePrefix="select"
+          />
         </Form.Group>
 
         <Form.Group controlId="body">
@@ -370,8 +444,8 @@ const PostForm = ({ post }) => {
         </Form.Group>
 
         <div>
-          <Button variant="dark" type="submit">
-            {!loading ? 'Update' : <Spinner size="sm" animation="border" variant="light" />}
+          <Button className="mt-3" variant="dark" type="submit">
+            {!loading ? 'Update Post' : <Spinner size="sm" animation="border" variant="light" />}
           </Button>
           <span className="ml-2">
             {updatePostData?.updatePost?.status === true && 'Successfully Updated'}
@@ -383,6 +457,9 @@ const PostForm = ({ post }) => {
       <hr className="mt-5 mb-2"></hr>
       <h4>Image Uploader</h4>
       <ImageUploader />
+      <hr className="mt-5 mb-2"></hr>
+      <h4>Tag Creator</h4>
+      <TagCreator />
       <hr className="mt-2 mb-5"></hr>
     </div>
   )
@@ -394,6 +471,7 @@ function Post({ router }) {
   })
 
   const post = data && data.editorPost
+  const tags = data && data.tags
 
   return (
     <div>
@@ -407,7 +485,7 @@ function Post({ router }) {
         <Container>
           {loading && <CenterSpinner animation="grow" />}
 
-          {!loading && post && <PostForm post={post} />}
+          {!loading && post && <PostForm post={post} tags={tags} />}
         </Container>
 
         <Footer />

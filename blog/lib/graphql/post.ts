@@ -5,10 +5,12 @@ import { PutObjectCommand, S3Client } from '@aws-sdk/client-s3'
 // Custom imports
 import { Post } from '../entities/Post'
 import { getEnvironment } from '../utils/get-environment'
-import { QueryOrder } from '@mikro-orm/core'
+import { FilterQuery, QueryOrder } from '@mikro-orm/core'
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner'
 import { LambdaContext } from '../graphql-types'
 import { invalidSecretError, validationError } from '../errors'
+import { isSecret } from '../utils/secret'
+import { Tag } from '../entities/Tag'
 
 type CreatePostArgs = {
   id?: string
@@ -34,6 +36,7 @@ type PostInput = Partial<{
   shortDescription: string
   longDescription: string
   imageUrl: string
+  tags: string[]
 }>
 
 type UpdatePostResponse = {
@@ -42,14 +45,10 @@ type UpdatePostResponse = {
   post: Post | null
 }
 
-enum PublishStatus {
+export enum PublishStatus {
   Published = 'PUBLISHED',
   Hidden = 'HIDDEN',
   Draft = 'DRAFT',
-}
-
-const isSecret = (secret: string): boolean => {
-  return secret === 'daleisadmin'
 }
 
 // TODO: Consider changing the way errors are handled, errors array, errors body, or errors enums
@@ -81,6 +80,7 @@ export const postTypeDefs = `#graphql
     updatedAt: String
     publishStatus: PublishStatus
     availableWithLink: Boolean
+    tags: [Tag]
   }
 
   input PostInput {
@@ -90,6 +90,7 @@ export const postTypeDefs = `#graphql
     shortDescription: String
     longDescription: String
     imageUrl: String
+    tags: [String!]
   }
   
   type UpdatePostResponse {
@@ -100,9 +101,9 @@ export const postTypeDefs = `#graphql
 
   type Query {
     post(id: ID!): Post
-    posts: [Post]
+    posts(tags: [String!]): [Post]
     editorPost(id: ID!, secret: String!): Post
-    editorPosts(secret: String!): [Post]
+    editorPosts(secret: String!, tags: [String!]): [Post]
     editorSignedUrl(fileName: String!, secret: String!, contentType: String!): String
   }
 
@@ -122,10 +123,13 @@ export const postResolvers = {
     url: ({ urlStub, id }: Post) => `${id}/${urlStub}`,
     createdAt: ({ createdAt }: Post) => createdAt && new Date(createdAt).toISOString(),
     updatedAt: ({ updatedAt }: Post) => updatedAt && new Date(updatedAt).toISOString(),
+    tags: async (post: Post, _root: any, __context: LambdaContext): Promise<Tag[]> => {
+      return post.tags.loadItems()
+    },
   },
 
   Query: {
-    post: (_: any, { id }: { id: string }, context: LambdaContext): Promise<Post> => {
+    post: (_root: any, { id }: { id: string }, context: LambdaContext): Promise<Post> => {
       if (!validate(id)) {
         throw validationError('ID Format is not valid')
       }
@@ -138,18 +142,25 @@ export const postResolvers = {
       })
     },
 
-    posts: (_: any, __: any, context: LambdaContext): Promise<Post[]> => {
+    posts: (_root: any, { tags }: any, context: LambdaContext): Promise<Post[]> => {
       const postRepository = context.em.getRepository(Post)
 
-      return postRepository.find(
-        {
-          publishStatus: PublishStatus.Published,
-        },
-        { orderBy: { createdAt: QueryOrder.DESC } }
-      )
+      const searchObject: FilterQuery<Post> = {
+        publishStatus: PublishStatus.Published,
+      }
+
+      if (tags) {
+        searchObject.tags = {
+          name: {
+            $in: tags,
+          },
+        }
+      }
+
+      return postRepository.find(searchObject, { orderBy: { createdAt: QueryOrder.DESC } })
     },
 
-    editorPost: (_: any, { id, secret }: any, context: LambdaContext): Promise<Post> => {
+    editorPost: (_root: any, { id, secret }: any, context: LambdaContext): Promise<Post> => {
       if (!isSecret(secret)) {
         throw invalidSecretError()
       }
@@ -162,17 +173,27 @@ export const postResolvers = {
       })
     },
 
-    editorPosts: (_: any, { secret }: any, context: LambdaContext): Promise<Post[]> => {
+    editorPosts: (_root: any, { secret, tags }: any, context: LambdaContext): Promise<Post[]> => {
       if (!isSecret(secret)) {
         throw invalidSecretError()
       }
 
       const postRepository = context.em.getRepository(Post)
 
-      return postRepository.find({}, { orderBy: { createdAt: QueryOrder.DESC } })
+      const searchObject: FilterQuery<Post> = {}
+
+      if (tags) {
+        searchObject.tags = {
+          name: {
+            $in: tags,
+          },
+        }
+      }
+
+      return postRepository.find(searchObject, { orderBy: { createdAt: QueryOrder.DESC } })
     },
 
-    editorSignedUrl: async (_: any, { fileName, contentType, secret }: any) => {
+    editorSignedUrl: async (_root: any, { fileName, contentType, secret }: any) => {
       if (!isSecret(secret)) {
         throw invalidSecretError()
       }
@@ -194,21 +215,42 @@ export const postResolvers = {
   },
 
   Mutation: {
-    createPost: async (_: any, args: CreatePostArgs, context: LambdaContext): Promise<UpdatePostResponse> => {
+    createPost: async (_root: any, args: CreatePostArgs, context: LambdaContext): Promise<UpdatePostResponse> => {
       if (!isSecret(args.secret)) {
         return invalidSecretResponse()
       }
 
       const postRepository = context.em.getRepository(Post)
 
-      const postInput = {
-        ...args.postInput,
-        publishStatus: PublishStatus.Draft,
-      }
+      const postInput = _.pickBy(
+        {
+          // Pass through
+          title: args.postInput.title,
+          urlStub: args.postInput.urlStub,
+          body: args.postInput.body,
+          shortDescription: args.postInput.shortDescription,
+          longDescription: args.postInput.longDescription,
+          imageUrl: args.postInput.imageUrl,
+
+          // Generated
+          publishStatus: PublishStatus.Draft,
+        },
+        (value) => !_.isUndefined(value)
+      )
 
       const post = postRepository.create(new Post(args.id ?? null, postInput))
 
-      await postRepository.persistAndFlush(post)
+      const tagRepository = context.em.getRepository(Tag)
+
+      const tags = await tagRepository.find({
+        name: {
+          $in: args.postInput.tags || [],
+        },
+      })
+
+      post.tags.add(tags)
+
+      await postRepository.persistAndFlush([post])
 
       return {
         status: true,
@@ -217,7 +259,7 @@ export const postResolvers = {
       }
     },
 
-    updatePost: async (_: any, args: UpdatePostArgs, context: LambdaContext): Promise<UpdatePostResponse> => {
+    updatePost: async (_root: any, args: UpdatePostArgs, context: LambdaContext): Promise<UpdatePostResponse> => {
       if (!isSecret(args.secret)) {
         return invalidSecretResponse()
       }
@@ -226,7 +268,29 @@ export const postResolvers = {
 
       const post = await postRepository.findOneOrFail(args.id)
 
-      Object.assign(post, args.postInput)
+      const postInput = _.pickBy(
+        {
+          title: args.postInput.title,
+          urlStub: args.postInput.urlStub,
+          body: args.postInput.body,
+          shortDescription: args.postInput.shortDescription,
+          longDescription: args.postInput.longDescription,
+          imageUrl: args.postInput.imageUrl,
+        },
+        (value) => !_.isUndefined(value)
+      )
+
+      Object.assign(post, postInput)
+
+      const tagRepository = context.em.getRepository(Tag)
+
+      const tags = await tagRepository.find({
+        name: {
+          $in: args.postInput.tags || [],
+        },
+      })
+
+      post.tags.set(tags)
 
       await postRepository.persistAndFlush(post)
 
@@ -237,7 +301,7 @@ export const postResolvers = {
       }
     },
 
-    publishPost: async (_: any, args: PostArgs, context: LambdaContext): Promise<UpdatePostResponse> => {
+    publishPost: async (_root: any, args: PostArgs, context: LambdaContext): Promise<UpdatePostResponse> => {
       if (!isSecret(args.secret)) {
         return invalidSecretResponse()
       }
@@ -260,7 +324,7 @@ export const postResolvers = {
       }
     },
 
-    hidePost: async (_: any, args: PostArgs, context: LambdaContext): Promise<UpdatePostResponse> => {
+    hidePost: async (_root: any, args: PostArgs, context: LambdaContext): Promise<UpdatePostResponse> => {
       if (!isSecret(args.secret)) {
         return invalidSecretResponse()
       }
@@ -283,7 +347,7 @@ export const postResolvers = {
       }
     },
 
-    unhidePost: async (_: any, args: PostArgs, context: LambdaContext): Promise<UpdatePostResponse> => {
+    unhidePost: async (_root: any, args: PostArgs, context: LambdaContext): Promise<UpdatePostResponse> => {
       if (!isSecret(args.secret)) {
         return invalidSecretResponse()
       }
@@ -306,7 +370,7 @@ export const postResolvers = {
       }
     },
 
-    setAvailableWithLink: async (_: any, args: PostArgs, context: LambdaContext): Promise<UpdatePostResponse> => {
+    setAvailableWithLink: async (_root: any, args: PostArgs, context: LambdaContext): Promise<UpdatePostResponse> => {
       if (!isSecret(args.secret)) {
         return invalidSecretResponse()
       }
@@ -328,7 +392,11 @@ export const postResolvers = {
       }
     },
 
-    removeAvailableWithLink: async (_: any, args: PostArgs, context: LambdaContext): Promise<UpdatePostResponse> => {
+    removeAvailableWithLink: async (
+      _root: any,
+      args: PostArgs,
+      context: LambdaContext
+    ): Promise<UpdatePostResponse> => {
       if (!isSecret(args.secret)) {
         return invalidSecretResponse()
       }

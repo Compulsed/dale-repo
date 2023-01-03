@@ -1,9 +1,10 @@
 import Head from 'next/head'
 import { gql, useQuery } from '@apollo/client'
+import { useRouter } from 'next/router'
 import dynamic from 'next/dynamic'
 import Link from 'next/link'
 
-import { Container, Row, Col, Button } from 'react-bootstrap'
+import { Container, Row, Col, Button, Badge } from 'react-bootstrap'
 
 import { Header } from '../../components/layout/header'
 import { Footer } from '../../components/layout/footer'
@@ -11,8 +12,18 @@ import { PostCard } from '../../components/card'
 import { CenterSpinner } from '../../components/spinner'
 
 const GET_POSTS = gql`
-  query ($secret: String!) {
-    editorPosts(secret: $secret) {
+  query ($secret: String!, $tags: [String!]) {
+    tags {
+      id
+      name
+      posts {
+        id
+      }
+      editorPosts(secret: $secret) {
+        id
+      }
+    }
+    editorPosts(secret: $secret, tags: $tags) {
       id
       title
       shortDescription
@@ -23,12 +34,20 @@ const GET_POSTS = gql`
       createdAt
       updatedAt
       publishStatus
+      tags {
+        id
+        name
+      }
     }
   }
 `
 
 const Editor = () => {
-  const { loading, error, data } = useQuery(GET_POSTS, { variables: { secret: localStorage.getItem('_password') } })
+  const router = useRouter()
+
+  const { loading, error, data } = useQuery(GET_POSTS, {
+    variables: { secret: localStorage.getItem('_password'), tags: router.query.tag ? [router.query.tag] : null },
+  })
 
   return (
     <div>
@@ -52,6 +71,22 @@ const Editor = () => {
           </Row>
 
           {loading && <CenterSpinner animation="grow" />}
+
+          <div style={{ border: '1px solid #e3e3e3', borderRadius: 5, padding: 10 }}>
+            {data &&
+              data.tags.map(({ name, posts, editorPosts }) => (
+                <Link
+                  href={{
+                    pathname: '/admin',
+                    query: { tag: name },
+                  }}
+                >
+                  <Badge key={name} bg="light" text="dark">
+                    {name} ({posts.length}, {editorPosts.length})
+                  </Badge>
+                </Link>
+              ))}
+          </div>
 
           {((data && data.editorPosts) || []).map((post) => {
             return (

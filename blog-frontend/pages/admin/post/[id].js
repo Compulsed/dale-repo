@@ -24,6 +24,10 @@ const GET_POSTS = gql`
       createdAt
       updatedAt
       publishStatus
+      tags {
+        id
+        name
+      }
     }
   }
 `

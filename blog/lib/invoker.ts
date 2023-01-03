@@ -1,17 +1,122 @@
 const handler = require('./blog-infrastructure-lambda.function')
 
-;(async () => {
+const _gqlCreateMutation = () => {
   const query = `
-    query($postId: ID!) {
-      post(id: $postId) {
-        id
+    mutation (
+      $createPostPostInput: PostInput!
+      $createPostSecret: String!
+    ) {
+      createPost(
+        postInput: $createPostPostInput
+        secret: $createPostSecret
+      ) {
+        errorMessage
+        status
+        post {
+          id
+          title
+          updatedAt
+          createdAt
+        }
       }
     }
   `
 
   const variables = {
-    postId: 'aaa',
+    createPostPostInput: {
+      title: 'tags',
+      tags: ['cdk'],
+    },
+    createPostSecret: 'daleisadmin',
   }
+
+  return { query, variables }
+}
+
+const _gqlUpdateMutation = () => {
+  const query = `
+    mutation (
+      $updatePostId: ID!
+      $updatePostPostInput: PostInput!
+      $updatePostSecret: String!
+    ) {
+      updatePost(
+        id: $updatePostId
+        postInput: $updatePostPostInput
+        secret: $updatePostSecret
+      ) {
+        errorMessage
+        status
+        post {
+          id
+          title
+          updatedAt
+          createdAt
+        }
+      }
+    }  
+  `
+
+  const variables = {
+    updatePostId: '69ece5b7-bf54-4131-b863-56ede1f071dc',
+    updatePostPostInput: {
+      title: 'leadership-update',
+      tags: ['cdk', 'leadership'],
+    },
+    updatePostSecret: 'daleisadmin',
+  }
+
+  return { query, variables }
+}
+
+const _gqlQuery = () => {
+  const query = `
+    query QueryPosts($secret: String!) {
+      editorPosts(secret: $secret) {
+        title
+        id
+        tags {
+          id
+          name
+        }
+      }
+    }
+  `
+
+  const variables = {
+    secret: 'daleisadmin',
+  }
+
+  return { query, variables }
+}
+
+const _gqlTagQuery = () => {
+  const query = `
+    query QueryPosts($secret: String!, $tags: [String!]) {
+      editorPosts(secret: $secret, tags: $tags) {
+        title
+        id
+        tags {
+          id
+          name
+        }
+      }
+    }
+  `
+
+  const variables = {
+    secret: 'daleisadmin',
+    tags: ['cdk'],
+  }
+
+  return { query, variables }
+}
+
+;(async () => {
+  // const { query, variables } = _gqlCreateMutation()
+  // const { query, variables } = _gqlUpdateMutation()
+  // const { query, variables } = _gqlQuery()
+  const { query, variables } = _gqlTagQuery()
 
   const body = {
     query,

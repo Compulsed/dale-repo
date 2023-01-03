@@ -18,6 +18,7 @@ import { postResolvers, postTypeDefs } from './graphql/post'
 import { commonResolvers, commonTypeDefs } from './graphql/common'
 import { getOrm } from './orm-config'
 import { GraphQLError } from 'graphql'
+import { tagResolvers, tagTypeDefs } from './graphql/tag'
 
 const isGraphQLError = (error: unknown) => {
   return unwrapResolverError(error) instanceof GraphQLError
@@ -29,8 +30,8 @@ const serverHandler = _.memoize(() => {
   const { STAGE } = getEnvironment(['STAGE'])
 
   const server = new ApolloServer({
-    typeDefs: mergeTypeDefs([commonTypeDefs, postTypeDefs]),
-    resolvers: mergeResolvers([commonResolvers, postResolvers]),
+    typeDefs: mergeTypeDefs([commonTypeDefs, postTypeDefs, tagTypeDefs]),
+    resolvers: mergeResolvers([commonResolvers, postResolvers, tagResolvers]),
     includeStacktraceInErrorResponses: STAGE !== 'prod',
     formatError: (formattedError, error) => {
       // Treat GraphQL Errors as 'validation' or 'handled' errors, unless they're marked as Internal errors
