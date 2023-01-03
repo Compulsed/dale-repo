@@ -15,6 +15,7 @@ TODO
 - ✅ Search / tagging posts (admin first)
 - ✅ Retool
 - Add server side generated sitemaps
+- Add semantic html (Article tag?)
 - Amazon cognito
 - Fix preview urls (I think cache invalidation will break things)
 - Video media for OG

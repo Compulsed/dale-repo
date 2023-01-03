@@ -1,6 +1,7 @@
 import Head from 'next/head'
 
 import { Container, Row, Col } from 'react-bootstrap'
+import { NextSeo } from 'next-seo'
 
 import { Header } from '../components/layout/header'
 import { Footer } from '../components/layout/footer'
@@ -60,6 +61,38 @@ export default function Home({ posts, tags }) {
       </Head>
 
       <main>
+        <NextSeo
+          title="Dale Salter's Blog"
+          description="My blog focuses on the following topics, Serverless, Software Engineering, Leadership, DevOps"
+          canonical={`${process.env.NEXT_PUBLIC_VERCEL_URL}`}
+          openGraph={{
+            type: 'website',
+            url: `${process.env.NEXT_PUBLIC_VERCEL_URL}`,
+            title: "Dale Salter's Blog",
+            description:
+              'My blog focuses on the following topics, Serverless, Software Engineering, Leadership, DevOps',
+            images: [
+              {
+                url: 'https://blog-production-image-bucket.s3-accelerate.amazonaws.com/logo-4.png',
+                width: 800,
+                height: 800,
+                alt: 'Og Blog Artwork',
+                type: 'image/png',
+              },
+            ],
+            siteName: 'Dale Salter - Blog',
+          }}
+          twitter={{
+            handle: '@enepture',
+            site: '@enepture',
+            title: "Dale Salter's Blog",
+            description:
+              'My blog focuses on the following topics, Serverless, Software Engineering, Leadership, DevOps',
+            image: 'https://blog-production-image-bucket.s3-accelerate.amazonaws.com/logo-4.png',
+            cardType: 'summary_large_image',
+          }}
+        />
+
         <Header />
 
         <SearchHeader tags={tags} />

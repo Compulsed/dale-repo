@@ -81,6 +81,36 @@ export default function Home({ posts, tags, selectedTag }) {
       </Head>
 
       <main>
+        <NextSeo
+          title={`Dale Salter's Blog - Search ${selectedTag}`}
+          description={`Topics related to ${selectedTag}`}
+          canonical={`${process.env.NEXT_PUBLIC_VERCEL_URL}/search/${selectedTag}`}
+          openGraph={{
+            type: 'website',
+            url: `${process.env.NEXT_PUBLIC_VERCEL_URL}/search/${selectedTag}`,
+            title: `Dale Salter's Blog - Search ${selectedTag}`,
+            description: `Topics related to ${selectedTag}`,
+            images: [
+              {
+                url: 'https://blog-production-image-bucket.s3-accelerate.amazonaws.com/logo-4.png',
+                width: 800,
+                height: 800,
+                alt: 'Og Blog Artwork',
+                type: 'image/png',
+              },
+            ],
+            siteName: 'Dale Salter - Blog',
+          }}
+          twitter={{
+            handle: '@enepture',
+            site: '@enepture',
+            title: `Dale Salter's Blog - Search ${selectedTag}`,
+            description: `Topics related to ${selectedTag}`,
+            image: 'https://blog-production-image-bucket.s3-accelerate.amazonaws.com/logo-4.png',
+            cardType: 'summary_large_image',
+          }}
+        />
+
         <Header />
 
         <SearchHeader tags={tags} selectedTag={selectedTag} />
