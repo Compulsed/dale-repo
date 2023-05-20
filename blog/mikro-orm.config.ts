@@ -30,7 +30,7 @@ export default Promise.resolve().then(async () => {
 
   const ormConfig = getOrmConfig({
     host: 'localhost',
-    dbName: secretValues.dbname,
+    dbName: `blog-${STAGE}`,
     user: secretValues.username,
     password: secretValues.password,
     port: parseInt(secretValues.port, 10),

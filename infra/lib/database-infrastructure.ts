@@ -14,8 +14,7 @@ import {
   BastionHostLinux,
   NatProvider,
 } from 'aws-cdk-lib/aws-ec2'
-import { Aspects, CfnOutput, Duration } from 'aws-cdk-lib'
-import { CfnDBCluster } from 'aws-cdk-lib/aws-rds'
+import { CfnOutput, Duration } from 'aws-cdk-lib'
 
 export class DatabaseInfrastructure extends cdk.Stack {
   constructor(scope: Construct, id: string, props?: cdk.StackProps) {
@@ -44,43 +43,25 @@ export class DatabaseInfrastructure extends cdk.Stack {
     // TODO: Consider if this is needed, it might be because that's what EC2 uses
     dbSecurityGroup.addIngressRule(Peer.anyIpv4(), Port.tcp(5432), 'Allow internet to read / write to aurora')
 
-    // Full spec https://github.com/aws/aws-cdk/issues/20197#issuecomment-1117555047
-    const dbCluster = new rds.DatabaseCluster(this, 'DbCluster', {
-      engine: rds.DatabaseClusterEngine.auroraPostgres({
-        version: rds.AuroraPostgresEngineVersion.VER_13_6,
+    const dbInstance = new rds.DatabaseInstance(this, 'PostgresDatabaseInstance', {
+      engine: rds.DatabaseInstanceEngine.POSTGRES,
+      vpc,
+      deletionProtection: false,
+      vpcSubnets: vpc.selectSubnets({
+        subnetType: SubnetType.PRIVATE_ISOLATED,
       }),
-      deletionProtection: true,
-      instances: 1,
-      instanceProps: {
-        vpc: vpc,
-        instanceType: new InstanceType('serverless'),
-        autoMinorVersionUpgrade: true,
-        publiclyAccessible: false,
-        securityGroups: [dbSecurityGroup],
-        vpcSubnets: vpc.selectSubnets({
-          subnetType: SubnetType.PRIVATE_ISOLATED,
-        }),
-        enablePerformanceInsights: true,
-      },
-      backup: {
-        retention: cdk.Duration.days(30),
-      },
+      securityGroups: [dbSecurityGroup],
+      autoMinorVersionUpgrade: true,
+      publiclyAccessible: false,
+      backupRetention: cdk.Duration.days(30),
+      instanceType: new InstanceType('t4g.micro'),
       port: 5432,
-    })
-
-    Aspects.of(dbCluster).add({
-      visit(node) {
-        if (node instanceof CfnDBCluster) {
-          node.serverlessV2ScalingConfiguration = {
-            minCapacity: 0.5,
-            maxCapacity: 1,
-          }
-        }
-      },
+      allocatedStorage: 20,
     })
 
     const bastion = new BastionHostLinux(this, 'BastionHost', {
       vpc,
+      instanceType: new InstanceType('t2.nano'),
       subnetSelection: vpc.selectSubnets({
         subnetType: SubnetType.PRIVATE_WITH_EGRESS,
       }),
@@ -92,7 +73,7 @@ export class DatabaseInfrastructure extends cdk.Stack {
       timeout: Duration.seconds(30),
       entry: __dirname + '/database-infrastructure-lambda.function.ts',
       environment: {
-        databaseSecretArn: dbCluster.secret?.secretFullArn ?? '',
+        databaseSecretArn: dbInstance.secret?.secretFullArn ?? '',
       },
       bundling: {
         externalModules: ['pg-native'],
@@ -103,7 +84,7 @@ export class DatabaseInfrastructure extends cdk.Stack {
       }),
     })
 
-    dbCluster.secret?.grantRead(apiFunction)
+    dbInstance.secret?.grantRead(apiFunction)
 
     new LambdaRestApi(this, 'ApiGateway', {
       handler: apiFunction,
@@ -114,17 +95,12 @@ export class DatabaseInfrastructure extends cdk.Stack {
     })
 
     new CfnOutput(this, 'DatabaseSecretArn', {
-      value: dbCluster.secret?.secretFullArn ?? '',
+      value: dbInstance.secret?.secretFullArn ?? '',
       exportName: 'DatabaseSecretArn',
     })
 
-    new CfnOutput(this, 'AdminDatabaseSecretArn', {
-      value: dbCluster.secret?.secretFullArn ?? '',
-      exportName: 'AdminDatabaseSecretArn',
-    })
-
     new CfnOutput(this, 'VpcName', {
-      value: dbCluster.secret?.secretFullArn ?? '',
+      value: dbInstance.secret?.secretFullArn ?? '',
       exportName: 'VpcName',
     })
   }

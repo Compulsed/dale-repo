@@ -30,7 +30,7 @@ echo "-> Database password: ${DATABASE_PASSWORD}"
 nohup aws \
   ssm start-session \
   --document-name AWS-StartPortForwardingSessionToRemoteHost \
-  --parameters "{\"host\":[\"databaseinfrastructure-dbcluster224236ef-3mbxyryd0ipg.cluster-cp1pjbcco8nm.us-east-1.rds.amazonaws.com\"],\"portNumber\":[\"5432\"], \"localPortNumber\":[\"5432\"]}" \
+  --parameters "{\"host\":[\"${DATABASE_HOST}\"],\"portNumber\":[\"5432\"], \"localPortNumber\":[\"5432\"]}" \
   --target "${BASTION_INSTANCE_ID}" > /dev/null 2>&1 &
 
 echo "Sleeping to let connection set up"

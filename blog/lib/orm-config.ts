@@ -33,10 +33,10 @@ export const getOrm = _.memoize(async () => {
   const secret = await tracer.startActiveSpan('get-secret', async (span: any) => {
     const secretsManagerClient = new SecretsManagerClient({ region: 'us-east-1' })
 
-    const { APP_DATABASE_SECRET_ARN } = getEnvironment(['APP_DATABASE_SECRET_ARN'])
+    const { DATABASE_SECRET_ARN } = getEnvironment(['DATABASE_SECRET_ARN'])
 
     const command = new GetSecretValueCommand({
-      SecretId: APP_DATABASE_SECRET_ARN,
+      SecretId: DATABASE_SECRET_ARN,
     })
 
     const secret = await secretsManagerClient.send(command)
@@ -50,9 +50,11 @@ export const getOrm = _.memoize(async () => {
 
   const host = process.env.LOCAL_INVOKE ? 'localhost' : secretValues.host
 
+  const { STAGE } = getEnvironment(['STAGE'])
+
   const ormConfig = getOrmConfig({
     user: secretValues.username,
-    dbName: secretValues.dbname,
+    dbName: `blog-${STAGE}`,
     host: host,
     password: secretValues.password,
     port: parseInt(secretValues.port, 10),
