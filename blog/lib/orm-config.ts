@@ -13,11 +13,14 @@ export const getOrmConfig = (config: Options) => {
   const sharedConfig: Options = {
     type: 'postgresql',
     host: PGHOST,
-    dbName: `blog-${STAGE}`, // TODO: Use a DB helper
+    dbName: `blog-${STAGE}`,
     user: PGUSER,
     password: PGPASSWORD,
     port: 5432,
     debug: true,
+    driverOptions: {
+      connection: { ssl: true },
+    },
     migrations: {
       path: './lib/migrations',
       tableName: 'migrations',

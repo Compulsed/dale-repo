@@ -93,7 +93,7 @@ export class BlogInfrastructure extends cdk.Stack {
         ),
       ],
       bundling: {
-        preCompilation: true, // Runs TSC before deploying
+        preCompilation: false, // Was true, but caused inline .js files
         keepNames: true, // This option might do something
 
         commandHooks: {
