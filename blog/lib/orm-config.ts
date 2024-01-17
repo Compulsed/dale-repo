@@ -1,5 +1,4 @@
 import _ from 'lodash'
-import { GetSecretValueCommand, SecretsManagerClient } from '@aws-sdk/client-secrets-manager'
 import { getEnvironment } from './utils/get-environment'
 import { MikroORM, Options, PostgreSqlDriver } from '@mikro-orm/postgresql'
 
@@ -9,11 +8,16 @@ import { Tag } from './entities/Tag'
 import { notFoundError } from './errors'
 
 export const getOrmConfig = (config: Options) => {
+  const { STAGE, PGHOST, PGUSER, PGPASSWORD } = getEnvironment(['STAGE', 'PGHOST', 'PGUSER', 'PGPASSWORD'])
+
   const sharedConfig: Options = {
     type: 'postgresql',
-
+    host: PGHOST,
+    dbName: `blog-${STAGE}`, // TODO: Use a DB helper
+    user: PGUSER,
+    password: PGPASSWORD,
+    port: 5432,
     debug: true,
-
     migrations: {
       path: './lib/migrations',
       tableName: 'migrations',
@@ -30,34 +34,8 @@ export const getOrmConfig = (config: Options) => {
 }
 
 export const getOrm = _.memoize(async () => {
-  const secret = await tracer.startActiveSpan('get-secret', async (span: any) => {
-    const secretsManagerClient = new SecretsManagerClient({ region: 'us-east-1' })
-
-    const { DATABASE_SECRET_ARN } = getEnvironment(['DATABASE_SECRET_ARN'])
-
-    const command = new GetSecretValueCommand({
-      SecretId: DATABASE_SECRET_ARN,
-    })
-
-    const secret = await secretsManagerClient.send(command)
-
-    span.end()
-
-    return secret
-  })
-
-  const secretValues = JSON.parse(secret.SecretString ?? '{}')
-
-  const host = process.env.LOCAL_INVOKE ? 'localhost' : secretValues.host
-
-  const { STAGE } = getEnvironment(['STAGE'])
-
+  // TODO: Can we just use the same config?
   const ormConfig = getOrmConfig({
-    user: secretValues.username,
-    dbName: `blog-${STAGE}`,
-    host: host,
-    password: secretValues.password,
-    port: parseInt(secretValues.port, 10),
     findOneOrFailHandler: (entityName: string) => {
       throw notFoundError(entityName)
     },

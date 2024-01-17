@@ -1,3 +1,5 @@
+import { APIGatewayProxyEventV2 } from 'aws-lambda'
+
 const handler = require('./blog-infrastructure-lambda.function')
 
 const _gqlCreateMutation = () => {
@@ -124,14 +126,34 @@ const _gqlTagQuery = () => {
     operationName: null,
   }
 
-  const event: any = {
-    httpMethod: 'POST',
-    path: '/',
+  const event: APIGatewayProxyEventV2 = {
     headers: {
       'content-type': 'application/json',
     },
-    requestContext: {},
+    requestContext: {
+      accountId: '',
+      apiId: '',
+      domainName: '',
+      domainPrefix: '',
+      http: {
+        method: 'POST',
+        path: '/',
+        protocol: '',
+        sourceIp: '',
+        userAgent: '',
+      },
+      requestId: '',
+      routeKey: '',
+      stage: '',
+      time: '',
+      timeEpoch: 0,
+    },
     body: JSON.stringify(body),
+    version: '',
+    routeKey: '',
+    rawPath: '',
+    rawQueryString: '',
+    isBase64Encoded: false,
   }
 
   const context: any = {}

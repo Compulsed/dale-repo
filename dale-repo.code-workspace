@@ -5,10 +5,6 @@
       "path": "."
     },
     {
-      "name": "⚙️ Infra",
-      "path": "./infra"
-    },
-    {
       "name": "🤖 Blog",
       "path": "./blog"
     },

@@ -1,12 +1,5 @@
 # Dale Repo
 
-Limitations:
+Database access
 
-- Lambda triggers in aurora
-
-**Dependencies**
-
-- AWS Cli
-- AWS Cli Systems manager
-- Jq
-- NodeJS
+`brew install neonctl`
