@@ -9,7 +9,7 @@ import { Certificate, CertificateValidation } from 'aws-cdk-lib/aws-certificatem
 import { Bucket, BucketAccessControl, HttpMethods } from 'aws-cdk-lib/aws-s3'
 import { AnyPrincipal, PolicyStatement } from 'aws-cdk-lib/aws-iam'
 import { HttpLambdaIntegration } from 'aws-cdk-lib/aws-apigatewayv2-integrations'
-import { DomainName, HttpApi } from 'aws-cdk-lib/aws-apigatewayv2'
+import { CorsHttpMethod, DomainName, HttpApi } from 'aws-cdk-lib/aws-apigatewayv2'
 import { ApiGatewayv2DomainProperties } from 'aws-cdk-lib/aws-route53-targets'
 
 const {
@@ -171,6 +171,12 @@ export class BlogInfrastructure extends cdk.Stack {
       createDefaultStage: true,
       defaultDomainMapping: {
         domainName: domainNameRecord,
+      },
+      corsPreflight: {
+        allowHeaders: ['Authorization'],
+        allowMethods: [CorsHttpMethod.GET, CorsHttpMethod.HEAD, CorsHttpMethod.OPTIONS, CorsHttpMethod.POST],
+        allowOrigins: ['*'],
+        maxAge: Duration.days(10),
       },
     })
 
