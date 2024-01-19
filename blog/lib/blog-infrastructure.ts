@@ -1,23 +1,33 @@
 import * as cdk from 'aws-cdk-lib'
 import { Construct } from 'constructs'
 import { NodejsFunction } from 'aws-cdk-lib/aws-lambda-nodejs'
-import { Cors, LambdaRestApi } from 'aws-cdk-lib/aws-apigateway'
 import { Architecture, LayerVersion, Runtime, Tracing } from 'aws-cdk-lib/aws-lambda'
-import { SubnetType, Vpc } from 'aws-cdk-lib/aws-ec2'
 import { ARecord, PublicHostedZone, RecordTarget } from 'aws-cdk-lib/aws-route53'
-import * as secretsManager from 'aws-cdk-lib/aws-secretsmanager'
 import { CfnOutput, Duration } from 'aws-cdk-lib'
 import { getEnvironment, getEnvironmentUnsafe } from './utils/get-environment'
 import { Certificate, CertificateValidation } from 'aws-cdk-lib/aws-certificatemanager'
-import { ApiGateway } from 'aws-cdk-lib/aws-route53-targets'
 import { Bucket, BucketAccessControl, HttpMethods } from 'aws-cdk-lib/aws-s3'
 import { AnyPrincipal, PolicyStatement } from 'aws-cdk-lib/aws-iam'
+import { HttpLambdaIntegration } from 'aws-cdk-lib/aws-apigatewayv2-integrations'
+import { DomainName, HttpApi } from 'aws-cdk-lib/aws-apigatewayv2'
+import { ApiGatewayv2DomainProperties } from 'aws-cdk-lib/aws-route53-targets'
 
-const { STAGE, OTEL_EXPORTER_OTLP_ENDPOINT, OTEL_EXPORTER_OTLP_HEADERS, OTEL_SERVICE_NAME } = getEnvironment([
+const {
+  STAGE,
+  OTEL_EXPORTER_OTLP_ENDPOINT,
+  OTEL_EXPORTER_OTLP_HEADERS,
+  OTEL_SERVICE_NAME,
+  PGHOST,
+  PGUSER,
+  PGPASSWORD,
+} = getEnvironment([
   'STAGE',
   'OTEL_EXPORTER_OTLP_ENDPOINT',
   'OTEL_EXPORTER_OTLP_HEADERS',
   'OTEL_SERVICE_NAME',
+  'PGHOST',
+  'PGUSER',
+  'PGPASSWORD',
 ])
 
 const { RELEASE } = getEnvironmentUnsafe(['RELEASE'])
@@ -26,31 +36,11 @@ export class BlogInfrastructure extends cdk.Stack {
   constructor(scope: Construct, id: string, props?: cdk.StackProps) {
     super(scope, id, props)
 
-    // TODO: Import from Infra  stack
+    // TODO: Import from Infra stack
     const hostedZoneId = 'Z05982951JTEV3EHAO42B'
     const rootName = 'api-blog.dalejsalter.com'
     const recordName = STAGE
     const domainName = `${recordName}.${rootName}`
-
-    const importedSecretArn = cdk.Fn.importValue('DatabaseSecretArn')
-
-    // TODO: Import from Infra stack?
-    const vpc = Vpc.fromLookup(this, 'Vpc', {
-      vpcName: 'DatabaseInfrastructure/Vpc',
-    })
-
-    const adminSecret = secretsManager.Secret.fromSecretCompleteArn(this, 'Secret', importedSecretArn)
-
-    // DNS
-    const zone = PublicHostedZone.fromHostedZoneAttributes(this, 'HostedZone', {
-      hostedZoneId,
-      zoneName: rootName,
-    })
-
-    const certificate = new Certificate(this, 'Certificate', {
-      domainName,
-      validation: CertificateValidation.fromDns(zone),
-    })
 
     // S3 Bucket
     const imageBucket = new Bucket(this, 'ImageBucket', {
@@ -83,8 +73,10 @@ export class BlogInfrastructure extends cdk.Stack {
       environment: {
         STAGE,
         IMAGE_BUCKET_NAME: imageBucket.bucketName,
-        DATABASE_SECRET_ARN: adminSecret.secretArn,
         RELEASE,
+        PGHOST,
+        PGUSER,
+        PGPASSWORD,
         // https://github.com/aws-observability/aws-otel-lambda/issues/361
         OTEL_PROPAGATORS: 'tracecontext',
         OTEL_EXPORTER_OTLP_ENDPOINT,
@@ -101,7 +93,7 @@ export class BlogInfrastructure extends cdk.Stack {
         ),
       ],
       bundling: {
-        preCompilation: true, // Runs TSC before deploying
+        preCompilation: false, // Was true, but caused inline .js files
         keepNames: true, // This option might do something
 
         commandHooks: {
@@ -121,7 +113,6 @@ export class BlogInfrastructure extends cdk.Stack {
           //  auto-instrumentation does not work. Impacts of including = ~700ms - 1s to cold start
           'graphql',
           'pg',
-          '@aws-sdk/client-secrets-manager',
           '@aws-sdk/client-s3',
         ],
 
@@ -152,41 +143,45 @@ export class BlogInfrastructure extends cdk.Stack {
         ],
         inject: ['./lib/esbuild-mikroorm-patch.ts'],
       },
-      vpc,
-      vpcSubnets: vpc.selectSubnets({
-        subnetType: SubnetType.PRIVATE_WITH_EGRESS,
-      }),
     })
-
-    adminSecret.grantRead(apiFunction)
 
     imageBucket.grantPut(apiFunction)
 
-    const api = new LambdaRestApi(this, 'ApiGateway', {
-      handler: apiFunction,
-      deployOptions: {
-        stageName: 'graphql',
-      },
-      domainName: {
-        certificate,
-        domainName,
-      },
-      defaultCorsPreflightOptions: {
-        allowOrigins: Cors.ALL_ORIGINS,
-        allowMethods: Cors.ALL_METHODS,
-        allowCredentials: true,
+    // DNS
+    const zone = PublicHostedZone.fromHostedZoneAttributes(this, 'HostedZone', {
+      hostedZoneId,
+      zoneName: rootName,
+    })
+
+    const certificate = new Certificate(this, 'Certificate', {
+      domainName,
+      validation: CertificateValidation.fromDns(zone),
+    })
+
+    const domainNameRecord = new DomainName(this, 'DN', {
+      domainName: domainName,
+      certificate: certificate,
+    })
+
+    const api = new HttpApi(this, 'HttpApi', {
+      defaultIntegration: new HttpLambdaIntegration('DefaultIntegration', apiFunction),
+      createDefaultStage: true,
+      defaultDomainMapping: {
+        domainName: domainNameRecord,
       },
     })
 
     new ARecord(this, 'APIGatewayRecord', {
       zone: zone,
-      target: RecordTarget.fromAlias(new ApiGateway(api)),
+      target: RecordTarget.fromAlias(
+        new ApiGatewayv2DomainProperties(domainNameRecord.regionalDomainName, domainNameRecord.regionalHostedZoneId)
+      ),
       recordName: recordName,
     })
 
-    new CfnOutput(this, 'AppDatabaseSecretArn', {
-      exportName: `BlogInfrastructure-${STAGE}-AppDatabaseSecretArn`,
-      value: adminSecret.secretArn,
+    new CfnOutput(this, 'Url', {
+      exportName: `BlogInfrastructure-${STAGE}-Url`,
+      value: api.url!,
     })
   }
 }

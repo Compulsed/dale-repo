@@ -5,10 +5,6 @@
       "path": "."
     },
     {
-      "name": "⚙️ Infra",
-      "path": "./infra"
-    },
-    {
       "name": "🤖 Blog",
       "path": "./blog"
     },
@@ -23,6 +19,9 @@
     "editor.detectIndentation": false,
     "editor.defaultFormatter": "esbenp.prettier-vscode",
     "editor.formatOnSave": true,
+    "search.exclude": {
+      "**/cdk.out": true
+    },
     "explorer.autoRevealExclude": {
       "**/node_modules": true
     },

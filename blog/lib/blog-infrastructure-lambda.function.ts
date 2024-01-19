@@ -1,9 +1,9 @@
 import 'source-map-support/register'
 
 import _ from 'lodash'
-import { APIGatewayEvent, APIGatewayProxyResult, Context } from 'aws-lambda'
+import { APIGatewayProxyEventV2, APIGatewayProxyResult, Context } from 'aws-lambda'
 import { ApolloServer } from '@apollo/server'
-import { startServerAndCreateLambdaHandler } from '@as-integrations/aws-lambda'
+import { startServerAndCreateLambdaHandler, handlers } from '@as-integrations/aws-lambda'
 import { mergeResolvers, mergeTypeDefs } from '@graphql-tools/merge'
 import { unwrapResolverError } from '@apollo/server/errors'
 
@@ -19,6 +19,7 @@ import { commonResolvers, commonTypeDefs } from './graphql/common'
 import { getOrm } from './orm-config'
 import { GraphQLError } from 'graphql'
 import { tagResolvers, tagTypeDefs } from './graphql/tag'
+import { LambdaContext } from './graphql-types'
 
 const isGraphQLError = (error: unknown) => {
   return unwrapResolverError(error) instanceof GraphQLError
@@ -29,7 +30,7 @@ const isGraphQLError = (error: unknown) => {
 const serverHandler = _.memoize(() => {
   const { STAGE } = getEnvironment(['STAGE'])
 
-  const server = new ApolloServer({
+  const server = new ApolloServer<LambdaContext>({
     typeDefs: mergeTypeDefs([commonTypeDefs, postTypeDefs, tagTypeDefs]),
     resolvers: mergeResolvers([commonResolvers, postResolvers, tagResolvers]),
     includeStacktraceInErrorResponses: STAGE !== 'prod',
@@ -59,7 +60,7 @@ const serverHandler = _.memoize(() => {
     },
   })
 
-  return startServerAndCreateLambdaHandler(server, {
+  return startServerAndCreateLambdaHandler(server, handlers.createAPIGatewayProxyEventV2RequestHandler(), {
     context: async ({ event, context }) => {
       const orm = await tracer.startActiveSpan('orm-setup', async (span: any) => {
         const orm = await getOrm()
@@ -86,7 +87,7 @@ Sentry.AWSLambda.init({
 })
 
 const handler = Sentry.AWSLambda.wrapHandler(
-  async (event: APIGatewayEvent, context: Context, cb: any): Promise<any> => {
+  async (event: APIGatewayProxyEventV2, context: Context, cb: any): Promise<any> => {
     // eslint-disable-next-line no-console
     console.log('event', JSON.stringify(event, null, 2))
 

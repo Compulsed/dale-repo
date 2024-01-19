@@ -1,12 +1,9 @@
 # Dale Repo
 
-Limitations:
+Database access
 
-- Lambda triggers in aurora
+`brew install neonctl`
 
-**Dependencies**
+Migration notes:
 
-- AWS Cli
-- AWS Cli Systems manager
-- Jq
-- NodeJS
+1. Must remove ENIs or will not be able to do a CDK change
