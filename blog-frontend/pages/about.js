@@ -29,7 +29,7 @@ After around 4 years of working within / leading a product team, I wanted to try
 
 In 2021 A Cloud Guru got acquired by [Pluralsight](https://www.pluralsight.com/) in the 2nd largest tech acquisition in Australian history. What a crazy time.
   
-Now in 2022 / 2023, I am working for another Serverless start-up, [Vendia](https://www.vendia.com/).
+Now in 2022 / 2024, I am working for another Serverless start-up, [Vendia](https://www.vendia.com/).
 Vendia is an inter-company data sharing platform, that uses a [permissioned blockchain](https://101blockchains.com/permissioned-blockchain/).
 Vendia is founded by the creator of AWS Lambda, Tim Wagner. 
 `
@@ -63,9 +63,9 @@ export default function About() {
             description: 'About Dale Salter',
             images: [
               {
-                url: 'https://bloginfrastructure-prod-imagebucket97210811-1mgqvezvs9c8h.s3-accelerate.amazonaws.com/49b5d292-66f8-49a0-9d6e-443984fcc8f7-2B84A38A-5894-4C12-AD65-933B785870CB_1_105_c.jpeg',
-                width: 600,
-                height: 600,
+                url: 'https://bloginfrastructure-prod-imagebucket97210811-1mgqvezvs9c8h.s3-accelerate.amazonaws.com/2bd82d94-6ac9-4f82-8e22-144fde2346e2-dale-square.jpeg',
+                width: 1500,
+                height: 1500,
                 alt: 'Og Blog Artwork',
                 type: 'image/jpeg',
               },
@@ -78,7 +78,7 @@ export default function About() {
             title: 'About Dale Salter',
             description: 'About Dale Salter',
             image:
-              'https://bloginfrastructure-prod-imagebucket97210811-1mgqvezvs9c8h.s3-accelerate.amazonaws.com/49b5d292-66f8-49a0-9d6e-443984fcc8f7-2B84A38A-5894-4C12-AD65-933B785870CB_1_105_c.jpeg',
+              'https://bloginfrastructure-prod-imagebucket97210811-1mgqvezvs9c8h.s3-accelerate.amazonaws.com/2bd82d94-6ac9-4f82-8e22-144fde2346e2-dale-square.jpeg',
             cardType: 'summary_large_image',
           }}
         />
@@ -93,7 +93,7 @@ export default function About() {
             <Col style={{ alignSelf: 'center', justifyContent: 'center', display: 'flex' }}>
               <img
                 style={{ width: '75%', maxWidth: 200 }}
-                src="https://bloginfrastructure-prod-imagebucket97210811-1mgqvezvs9c8h.s3-accelerate.amazonaws.com/49b5d292-66f8-49a0-9d6e-443984fcc8f7-2B84A38A-5894-4C12-AD65-933B785870CB_1_105_c.jpeg"
+                src="https://bloginfrastructure-prod-imagebucket97210811-1mgqvezvs9c8h.s3-accelerate.amazonaws.com/2bd82d94-6ac9-4f82-8e22-144fde2346e2-dale-square.jpeg"
               ></img>
             </Col>
           </Row>
