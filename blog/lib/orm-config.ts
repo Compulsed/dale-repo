@@ -18,7 +18,7 @@ export const getOrmConfig = (config: Options) => {
     password: PGPASSWORD,
     port: 5432,
     debug: true,
-    pool: { min: 0, max: 5 },
+    pool: { min: 0, max: 1 },
     driverOptions: {
       connection: { ssl: true },
     },
