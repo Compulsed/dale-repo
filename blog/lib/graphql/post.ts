@@ -125,6 +125,7 @@ export const postResolvers = {
     updatedAt: ({ updatedAt }: Post) => updatedAt && new Date(updatedAt).toISOString(),
     // Note: Looks like this might fan out a additional pg.connects (N + 1)
     //  is there a way to cache this or make it more performant?
+    // https://ui.honeycomb.io/dale-7f/environments/test/datasets/dale-blog-prod/result/frUVArrXwuk/trace/kC5TqoQsfMV?fields[]=s_name&fields[]=s_serviceName&span=84f1371cf9a8f937
     /*
       -- Example SQL
       select
