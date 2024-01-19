@@ -20,6 +20,7 @@ import { getOrm } from './orm-config'
 import { GraphQLError } from 'graphql'
 import { tagResolvers, tagTypeDefs } from './graphql/tag'
 import { LambdaContext } from './graphql-types'
+import { PostgreSqlMikroORM } from '@mikro-orm/postgresql/PostgreSqlMikroORM'
 
 const isGraphQLError = (error: unknown) => {
   return unwrapResolverError(error) instanceof GraphQLError
@@ -62,12 +63,13 @@ const serverHandler = _.memoize(() => {
 
   return startServerAndCreateLambdaHandler(server, handlers.createAPIGatewayProxyEventV2RequestHandler(), {
     context: async ({ event, context }) => {
-      const orm = await tracer.startActiveSpan('orm-setup', async (span: any) => {
+      const orm: PostgreSqlMikroORM = await tracer.startActiveSpan('orm-setup', async (span: any) => {
         const orm = await getOrm()
         span.end()
         return orm
       })
 
+      // Sets up a clean context for each request
       const em = orm.em.fork()
 
       return {
@@ -93,6 +95,7 @@ const handler = Sentry.AWSLambda.wrapHandler(
 
     await sdkInit // To run locally, you need to await for SDK start
 
+    // TODO: Document / extract this -- perhaps it is not needed due to API Gateway including it
     if (event.requestContext.http.method === 'OPTIONS') {
       return {
         statusCode: 200,

@@ -18,6 +18,7 @@ export const getOrmConfig = (config: Options) => {
     password: PGPASSWORD,
     port: 5432,
     debug: true,
+    pool: { min: 0, max: 5 },
     driverOptions: {
       connection: { ssl: true },
     },
@@ -45,7 +46,7 @@ export const getOrm = _.memoize(async () => {
   })
 
   // 600ms - 2s to initialize on cold-start due to pg-connect
-  const orm = await tracer.startActiveSpan('orm-init', async (span: any) => {
+  const orm: MikroORM = await tracer.startActiveSpan('orm-init', async (span: any) => {
     const orm = await MikroORM.init<PostgreSqlDriver>(ormConfig)
     span.end()
     return orm
