@@ -15,8 +15,10 @@ jobs:
   release-production:
     runs-on: ubuntu-latest
     env:
-      ADMIN_DATABASE_SECRET_ARN: DbClusterSecret9A4B0D5E-u27xQsOk1a4V
       STAGE: prod
+      PGHOST: ${{ secrets.PGHOST }}
+      PGPASSWORD: ${{ secrets.PGPASSWORD }}
+      PGUSER: ${{ secrets.PGUSER }}
       OTEL_SERVICE_NAME: dale-blog-prod
       OTEL_EXPORTER_OTLP_ENDPOINT: https://api.honeycomb.io
       OTEL_EXPORTER_OTLP_HEADERS: x-honeycomb-team=${{ secrets.HONEYCOMB_API_KEY }}
@@ -40,10 +42,6 @@ jobs:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: 'us-east-1'
-
-      - name: Port forward
-        working-directory: ./
-        run: ./bin/port-forward
 
       - name: Up Script
         working-directory: ./blog
