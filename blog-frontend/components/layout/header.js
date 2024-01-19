@@ -13,7 +13,7 @@ export const Header = () => {
             <a>
               <img
                 style={{ width: '100%' }}
-                src="https://blog-production-image-bucket.s3-accelerate.amazonaws.com/logo-4.png"
+                src="https://bloginfrastructure-prod-imagebucket97210811-1mgqvezvs9c8h.s3-accelerate.amazonaws.com/99779162-8819-4754-b45f-587784684e44-logo-4.png"
               />
             </a>
           </Link>

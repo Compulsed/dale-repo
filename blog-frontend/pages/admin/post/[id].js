@@ -45,7 +45,10 @@ function Post({ router }) {
   return (
     <div>
       <Head>
-        <link rel="icon" href="https://blog-production-image-bucket.s3-accelerate.amazonaws.com/logo-4.png" />
+        <link
+          rel="icon"
+          href="https://bloginfrastructure-prod-imagebucket97210811-1mgqvezvs9c8h.s3-accelerate.amazonaws.com/99779162-8819-4754-b45f-587784684e44-logo-4.png"
+        />
       </Head>
 
       <main>

@@ -78,7 +78,10 @@ export default function Home({ posts, tags, selectedTag }) {
   return (
     <div>
       <Head>
-        <link rel="icon" href="https://blog-production-image-bucket.s3-accelerate.amazonaws.com/logo-4.png" />
+        <link
+          rel="icon"
+          href="https://bloginfrastructure-prod-imagebucket97210811-1mgqvezvs9c8h.s3-accelerate.amazonaws.com/99779162-8819-4754-b45f-587784684e44-logo-4.png"
+        />
       </Head>
 
       <main>
@@ -93,7 +96,7 @@ export default function Home({ posts, tags, selectedTag }) {
             description: `Topics related to ${selectedTag}`,
             images: [
               {
-                url: 'https://blog-production-image-bucket.s3-accelerate.amazonaws.com/logo-4.png',
+                url: 'https://bloginfrastructure-prod-imagebucket97210811-1mgqvezvs9c8h.s3-accelerate.amazonaws.com/99779162-8819-4754-b45f-587784684e44-logo-4.png',
                 width: 800,
                 height: 800,
                 alt: 'Og Blog Artwork',
@@ -107,7 +110,8 @@ export default function Home({ posts, tags, selectedTag }) {
             site: '@enepture',
             title: `Dale Salter's Blog - Search ${selectedTag}`,
             description: `Topics related to ${selectedTag}`,
-            image: 'https://blog-production-image-bucket.s3-accelerate.amazonaws.com/logo-4.png',
+            image:
+              'https://bloginfrastructure-prod-imagebucket97210811-1mgqvezvs9c8h.s3-accelerate.amazonaws.com/99779162-8819-4754-b45f-587784684e44-logo-4.png',
             cardType: 'summary_large_image',
           }}
         />

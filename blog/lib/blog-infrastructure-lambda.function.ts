@@ -93,6 +93,19 @@ const handler = Sentry.AWSLambda.wrapHandler(
 
     await sdkInit // To run locally, you need to await for SDK start
 
+    if (event.requestContext.http.method === 'OPTIONS') {
+      return {
+        statusCode: 200,
+        headers: {
+          'access-control-allow-methods': 'OPTIONS,GET,PUT,POST,DELETE,PATCH,HEAD',
+          'access-control-allow-origin': '*',
+          'access-control-allow-headers':
+            'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token,X-Amz-User-Agent',
+          'access-control-allow-credentials': 'true',
+        },
+      }
+    }
+
     const response = await tracer.startActiveSpan('handler', { root: true }, async (span: any) => {
       const response = (await serverHandler()(event, context, cb)) as APIGatewayProxyResult
 
@@ -106,6 +119,9 @@ const handler = Sentry.AWSLambda.wrapHandler(
           'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token,X-Amz-User-Agent',
         'access-control-allow-credentials': 'true',
       })
+
+      // eslint-disable-next-line no-console
+      console.log(response)
 
       span.end()
 

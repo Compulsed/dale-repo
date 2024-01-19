@@ -173,10 +173,11 @@ export class BlogInfrastructure extends cdk.Stack {
         domainName: domainNameRecord,
       },
       corsPreflight: {
-        allowHeaders: ['Authorization'],
+        allowHeaders: ['*'],
         allowMethods: [CorsHttpMethod.GET, CorsHttpMethod.HEAD, CorsHttpMethod.OPTIONS, CorsHttpMethod.POST],
         allowOrigins: ['*'],
-        maxAge: Duration.days(10),
+        maxAge: Duration.days(0),
+        exposeHeaders: ['*'],
       },
     })
 

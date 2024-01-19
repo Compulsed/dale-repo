@@ -50,7 +50,7 @@ soap_gigabyte = text_memory.user(pipeline_icf, web.heat_rj(5 *
 \`\`\`
 
 
-![alt text](https://blog-production-image-bucket.s3-accelerate.amazonaws.com/logo-4.png "Logo Title From DB Text 1")
+![alt text](https://bloginfrastructure-prod-imagebucket97210811-1mgqvezvs9c8h.s3-accelerate.amazonaws.com/99779162-8819-4754-b45f-587784684e44-logo-4.png "Logo Title From DB Text 1")
 
 Ebrius ostia non, nato [non durat](http://www.aiacem.net/tulisset) poenas
 tumebat cultum meritum homines premunt. Ardet hederis, viro, alas saepius,
@@ -161,7 +161,10 @@ function Post() {
   return (
     <div>
       <Head>
-        <link rel="icon" href="https://blog-production-image-bucket.s3-accelerate.amazonaws.com/logo-4.png" />
+        <link
+          rel="icon"
+          href="https://bloginfrastructure-prod-imagebucket97210811-1mgqvezvs9c8h.s3-accelerate.amazonaws.com/99779162-8819-4754-b45f-587784684e44-logo-4.png"
+        />
       </Head>
 
       <main>
