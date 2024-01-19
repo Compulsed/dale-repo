@@ -20,6 +20,7 @@ const {
   PGHOST,
   PGUSER,
   PGPASSWORD,
+  BLOG_ADMIN_SECRET,
 } = getEnvironment([
   'STAGE',
   'OTEL_EXPORTER_OTLP_ENDPOINT',
@@ -28,6 +29,7 @@ const {
   'PGHOST',
   'PGUSER',
   'PGPASSWORD',
+  'BLOG_ADMIN_SECRET',
 ])
 
 const { RELEASE } = getEnvironmentUnsafe(['RELEASE'])
@@ -77,6 +79,7 @@ export class BlogInfrastructure extends cdk.Stack {
         PGHOST,
         PGUSER,
         PGPASSWORD,
+        BLOG_ADMIN_SECRET,
         // https://github.com/aws-observability/aws-otel-lambda/issues/361
         OTEL_PROPAGATORS: 'tracecontext',
         OTEL_EXPORTER_OTLP_ENDPOINT,
