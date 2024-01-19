@@ -19,6 +19,7 @@ jobs:
       PGHOST: ${{ secrets.PGHOST }}
       PGPASSWORD: ${{ secrets.PGPASSWORD }}
       PGUSER: ${{ secrets.PGUSER }}
+      BLOG_ADMIN_SECRET: ${{ secrets.BLOG_ADMIN_SECRET }}
       OTEL_SERVICE_NAME: dale-blog-prod
       OTEL_EXPORTER_OTLP_ENDPOINT: https://api.honeycomb.io
       OTEL_EXPORTER_OTLP_HEADERS: x-honeycomb-team=${{ secrets.HONEYCOMB_API_KEY }}
