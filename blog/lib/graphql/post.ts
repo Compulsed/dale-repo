@@ -123,6 +123,23 @@ export const postResolvers = {
     url: ({ urlStub, id }: Post) => `${id}/${urlStub}`,
     createdAt: ({ createdAt }: Post) => createdAt && new Date(createdAt).toISOString(),
     updatedAt: ({ updatedAt }: Post) => updatedAt && new Date(updatedAt).toISOString(),
+    // Note: Looks like this might fan out a additional pg.connects (N + 1)
+    //  is there a way to cache this or make it more performant?
+    // https://ui.honeycomb.io/dale-7f/environments/test/datasets/dale-blog-prod/result/frUVArrXwuk/trace/kC5TqoQsfMV?fields[]=s_name&fields[]=s_serviceName&span=84f1371cf9a8f937
+    /*
+      -- Example SQL
+      select
+        "t0".*,
+        "p1"."tag_id" as "fk__tag_id",
+        "p1"."post_id" as "fk__post_id"
+      from
+        "tag" as "t0"
+        left join "post_tags" as "p1" on "t0"."id" = "p1"."tag_id"
+      where
+        "p1"."post_id" in ('7e5bbf74-c62e-4b96-9f44-08b327e5d0e8')
+      order by
+        "p1"."id" asc
+    */
     tags: async (post: Post, _root: any, __context: LambdaContext): Promise<Tag[]> => {
       return post.tags.loadItems()
     },
