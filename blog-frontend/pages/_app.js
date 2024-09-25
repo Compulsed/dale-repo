@@ -10,12 +10,12 @@ import '../styles/globals.css'
 
 const SEO = {
   title: 'Dale Salter Blog',
-  description: 'Serverless, Software Engineering, Leadership, DevOps',
+  description: 'Software Engineering, Leadership, DevOps',
   openGraph: {
     type: 'website',
     url: `${process.env.NEXT_PUBLIC_VERCEL_URL}`,
     title: 'Dale Salter Blog',
-    description: 'Serverless, Software Engineering, Leadership, DevOps',
+    description: 'Software Engineering, Leadership, DevOps',
     images: [
       {
         url: 'https://bloginfrastructure-prod-imagebucket97210811-1mgqvezvs9c8h.s3-accelerate.amazonaws.com/99779162-8819-4754-b45f-587784684e44-logo-4.png',

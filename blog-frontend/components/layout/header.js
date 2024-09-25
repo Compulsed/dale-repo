@@ -24,7 +24,7 @@ export const Header = () => {
               <Title>Dale Salter</Title>
             </TitleLink>
           </Link>
-          <h6 className="mb-0 text-muted">Serverless, Software Engineering, Leadership, DevOps</h6>
+          <h6 className="mb-0 text-muted">Software Engineering, Leadership, DevOps</h6>
         </Col>
         <Col style={{ alignSelf: 'flex-end' }}>
           <SocialBar>

@@ -66,14 +66,13 @@ export default function Home({ posts, tags }) {
       <main>
         <NextSeo
           title="Dale Salter's Blog"
-          description="My blog focuses on the following topics, Serverless, Software Engineering, Leadership, DevOps"
+          description="My blog focuses on the following topics, Software Engineering, Leadership, DevOps"
           canonical={`${process.env.NEXT_PUBLIC_VERCEL_URL}`}
           openGraph={{
             type: 'website',
             url: `${process.env.NEXT_PUBLIC_VERCEL_URL}`,
             title: "Dale Salter's Blog",
-            description:
-              'My blog focuses on the following topics, Serverless, Software Engineering, Leadership, DevOps',
+            description: 'My blog focuses on the following topics, Software Engineering, Leadership, DevOps',
             images: [
               {
                 url: 'https://bloginfrastructure-prod-imagebucket97210811-1mgqvezvs9c8h.s3-accelerate.amazonaws.com/99779162-8819-4754-b45f-587784684e44-logo-4.png',
@@ -89,8 +88,7 @@ export default function Home({ posts, tags }) {
             handle: '@enepture',
             site: '@enepture',
             title: "Dale Salter's Blog",
-            description:
-              'My blog focuses on the following topics, Serverless, Software Engineering, Leadership, DevOps',
+            description: 'My blog focuses on the following topics, Software Engineering, Leadership, DevOps',
             image:
               'https://bloginfrastructure-prod-imagebucket97210811-1mgqvezvs9c8h.s3-accelerate.amazonaws.com/99779162-8819-4754-b45f-587784684e44-logo-4.png',
             cardType: 'summary_large_image',
