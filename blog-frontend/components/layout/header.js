@@ -3,6 +3,7 @@ import Link from 'next/link'
 import { Container, Row, Col } from 'react-bootstrap'
 import styled from 'styled-components'
 import { FaLinkedin, FaTwitterSquare, FaGithubSquare } from 'react-icons/fa'
+import { WEBSITE_ICON } from '../../components/constants'
 
 export const Header = () => {
   return (
@@ -11,10 +12,7 @@ export const Header = () => {
         <Col style={{ flex: '0 0 50px', padding: 0, justifyContent: 'center' }}>
           <Link href="/" as="/" passHref legacyBehavior>
             <a>
-              <img
-                style={{ width: '100%' }}
-                src="https://bloginfrastructure-prod-imagebucket97210811-1mgqvezvs9c8h.s3-accelerate.amazonaws.com/99779162-8819-4754-b45f-587784684e44-logo-4.png"
-              />
+              <img style={{ width: '100%' }} src={WEBSITE_ICON} />
             </a>
           </Link>
         </Col>

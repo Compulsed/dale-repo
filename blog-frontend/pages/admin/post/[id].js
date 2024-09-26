@@ -10,6 +10,7 @@ import { Footer } from '../../../components/layout/footer'
 import { PostCard } from '../../../components/card'
 import { CenterSpinner } from '../../../components/spinner'
 import { BlogMarkdown } from '../../../components/blog-markdown'
+import { WEBSITE_ICON } from '../../../components/constants'
 
 const GET_POSTS = gql`
   query ($id: ID!, $secret: String!) {
@@ -45,10 +46,7 @@ function Post({ router }) {
   return (
     <div>
       <Head>
-        <link
-          rel="icon"
-          href="https://bloginfrastructure-prod-imagebucket97210811-1mgqvezvs9c8h.s3-accelerate.amazonaws.com/99779162-8819-4754-b45f-587784684e44-logo-4.png"
-        />
+        <link rel="icon" href={WEBSITE_ICON} />
       </Head>
 
       <main>

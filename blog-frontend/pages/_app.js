@@ -1,6 +1,7 @@
 import { ApolloProvider } from '@apollo/client'
 import { DefaultSeo } from 'next-seo'
 import { GoogleAnalytics } from 'nextjs-google-analytics'
+import { WEBSITE_ICON } from '../components/constants'
 
 import client from '../lib/apolloClient'
 
@@ -18,7 +19,7 @@ const SEO = {
     description: 'Software Engineering, Leadership, DevOps',
     images: [
       {
-        url: 'https://bloginfrastructure-prod-imagebucket97210811-1mgqvezvs9c8h.s3-accelerate.amazonaws.com/99779162-8819-4754-b45f-587784684e44-logo-4.png',
+        url: WEBSITE_ICON,
         width: 800,
         height: 800,
         alt: 'Blog Artwork',
