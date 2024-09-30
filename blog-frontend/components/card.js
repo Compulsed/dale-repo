@@ -26,7 +26,7 @@ export const PostCard = ({ post, highlightHover = false, editMode }) => {
 
           <Row>
             <Col sm={10}>
-              <h3>{post.title}</h3>
+              <h3 class="card-title">{post.title}</h3>
               <h5 className="mb-2 text-muted">{post.shortDescription}</h5>
               <p>{post.longDescription}</p>
               <p className="small">
