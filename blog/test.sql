@@ -1,0 +1,1 @@
+select "t0".*, "p1"."tag_id" as "fk__tag_id", "p1"."post_id" as "fk__post_id" from "tag" as "t0" left join "post_tags" as "p1" on "t0"."id" = "p1"."tag_id" where "p1"."post_id" in ('7e5bbf74-c62e-4b96-9f44-08b327e5d0e8') order by "p1"."id" asc

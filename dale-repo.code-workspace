@@ -34,7 +34,10 @@
       "opentelemetry",
       "OTEL",
       "OTLP"
-    ]
+    ],
+    "[sql]": {
+      "editor.defaultFormatter": "adpyke.vscode-sql-formatter"
+    }
   },
   "extensions": {
     "recommendations": ["streetsidesoftware.code-spell-checker", "esbenp.prettier-vscode", "dbaeumer.vscode-eslint"]
